@@ -1,0 +1,23 @@
+
+[Network]
+  Address = ":19132"
+
+[Players]
+  Folder = "savedata/players"
+  MaxCount = 0
+  MaximumChunkRadius = 32
+  SaveData = false
+
+[Resources]
+  AutoBuildPack = true
+  Folder = "savedata/resources"
+  Required = false
+
+[Server]
+  AuthEnabled = true
+  DisableJoinQuitMessages = false
+  Name = "df-economy Test Server"
+
+[World]
+  Folder = "savedata/world"
+  SaveData = false
