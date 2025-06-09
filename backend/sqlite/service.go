@@ -25,7 +25,8 @@ func initSchema(db *sql.DB) error {
 	// Create the necessary tables if they do not exist.
 	_, err := db.Exec(`
 		CREATE TABLE IF NOT EXISTS balances (
-			id TEXT PRIMARY KEY,
+			uuid TEXT PRIMARY KEY,
+			name TEXT,
 			balance REAL NOT NULL DEFAULT 0
 		);
 	`)
