@@ -27,7 +27,7 @@ func initSchema(db *sql.DB) error {
 		CREATE TABLE IF NOT EXISTS balances (
 			uuid TEXT PRIMARY KEY,
 			name TEXT,
-			balance REAL NOT NULL DEFAULT 0
+			money REAL NOT NULL DEFAULT 0
 		);
 	`)
 	return err
@@ -35,8 +35,15 @@ func initSchema(db *sql.DB) error {
 }
 
 func (s *svc) Balance(id uuid.UUID) (float64, error) {
-	// TODO
-	return 0, nil
+	var amount float64
+	err := s.db.QueryRow("SELECT money FROM balances WHERE uuid = ?", id.String()).Scan(&amount)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, economy.ErrUnknownPlayer
+		}
+		return 0, err
+	}
+	return amount, nil
 }
 
 func (s *svc) Set(id uuid.UUID, amount float64) error {
