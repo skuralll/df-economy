@@ -12,7 +12,7 @@ import "github.com/google/uuid"
 //   - Top(page, size int): Retrieves a paginated list of top entries based on balance.
 type Economy interface {
 	Balance(id uuid.UUID) (float64, error)
-	Set(id uuid.UUID, amount float64) error
+	Set(id uuid.UUID, name *string, amount float64) error
 	Top(page, size int) ([]Entry, error)
 }
 

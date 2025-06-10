@@ -46,9 +46,17 @@ func (s *svc) Balance(id uuid.UUID) (float64, error) {
 	return amount, nil
 }
 
-func (s *svc) Set(id uuid.UUID, amount float64) error {
-	// TODO
-	return nil
+func (s *svc) Set(id uuid.UUID, name *string, amount float64) error {
+	if amount < 0 {
+		return economy.ErrNegativeAmount
+	}
+	_, err := s.db.Exec(`
+		INSERT INTO balances (uuid, name ,money) VALUES (?,?,?)
+		ON CONFLICT (uuid) DO UPDATE 
+			SET money = excluded.money,
+					name = COALESCE(excluded.name, balances.name)
+	`, id.String(), name, amount)
+	return err
 }
 
 func (s *svc) Top(page, size int) ([]economy.Entry, error) {
