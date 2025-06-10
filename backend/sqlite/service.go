@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/google/uuid"
 	"github.com/skuralll/dfeconomy/economy"
@@ -60,7 +61,52 @@ func (s *svc) Set(ctx context.Context, id uuid.UUID, name *string, amount float6
 	return err
 }
 
-func (s *svc) Top(ctx context.Context, page, size int) ([]economy.Entry, error) {
-	// TODO
-	return nil, nil
+func (s *svc) Top(
+	ctx context.Context,
+	page, size int, // page 1-based, size > 0
+) ([]economy.Entry, error) {
+
+	if size <= 0 {
+		return nil, errors.New("size must be positive")
+	}
+	if page <= 0 {
+		page = 1
+	}
+	offset := (page - 1) * size
+
+	rows, err := s.db.QueryContext(ctx, `
+		SELECT uuid, name, money
+		FROM balances
+		ORDER BY money DESC
+		LIMIT ? OFFSET ?
+	`, size, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var list []economy.Entry
+	for rows.Next() {
+		var (
+			uStr  string
+			name  sql.NullString
+			money int64
+		)
+		if err := rows.Scan(&uStr, &name, &money); err != nil {
+			return nil, err
+		}
+		u, err := uuid.Parse(uStr)
+		if err != nil { // skip broken uuid
+			continue
+		}
+		list = append(list, economy.Entry{
+			UUID:  u,
+			Name:  name.String,
+			Money: money,
+		})
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return list, nil
 }
