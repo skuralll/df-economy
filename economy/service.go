@@ -1,23 +1,23 @@
 package economy
 
-import "github.com/google/uuid"
+import (
+	"context"
+
+	"github.com/google/uuid"
+)
 
 // Economy defines the interface for managing user balances and transactions
-// within an economic system. It provides methods to query balances, deposit and
-// withdraw funds, transfer amounts between accounts, and retrieve a leaderboard.
+// within an economic system. It provides methods to query balances, set balances,
+// and retrieve a leaderboard.
 //
 // Methods:
 //   - Balance(id uuid.UUID): Returns the current balance for the specified user.
-//   - Deposit(id uuid.UUID, amount float64): Adds the specified amount to the user's balance.
-//   - Withdraw(id uuid.UUID, amount float64): Deducts the specified amount from the user's balance.
-//   - Transfer(from, to uuid.UUID, amount float64): Transfers the specified amount from one user to another.
+//   - Set(id uuid.UUID, amount float64): Sets the user's balance to the specified amount.
 //   - Top(page, size int): Retrieves a paginated list of top entries based on balance.
 type Economy interface {
-	Balance(id uuid.UUID) (float64, error)
-	Deposit(id uuid.UUID, amount float64) error
-	Withdraw(id uuid.UUID, amount float64) error
-	Transfer(from, to uuid.UUID, amount float64) error
-	Top(page, size int) ([]Entry, error)
+	Balance(ctx context.Context, id uuid.UUID) (float64, error)
+	Set(ctx context.Context, id uuid.UUID, name *string, amount float64) error
+	Top(ctx context.Context, page, size int) ([]Entry, error)
 }
 
 // Entry represents a single row in the balance leaderboard.
@@ -30,5 +30,5 @@ type Economy interface {
 type Entry struct {
 	UUID  uuid.UUID // Player’s UUID
 	Name  string    // Display name
-	Money int64     // Balance
+	Money float64   // Balance
 }

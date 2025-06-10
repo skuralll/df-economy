@@ -17,7 +17,8 @@
         "GitHub.vscode-pull-request-github",
         "golang.go",
         "tamasfe.even-better-toml",
-        "yzhang.markdown-all-in-one"
+        "yzhang.markdown-all-in-one",
+        "qufiwefefwoyn.inline-sql-syntax"
       ]
     }
   }
