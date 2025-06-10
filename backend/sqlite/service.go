@@ -90,7 +90,7 @@ func (s *svc) Top(
 		var (
 			uStr  string
 			name  sql.NullString
-			money int64
+			money float64
 		)
 		if err := rows.Scan(&uStr, &name, &money); err != nil {
 			return nil, err

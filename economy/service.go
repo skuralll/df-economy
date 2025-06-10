@@ -30,5 +30,5 @@ type Economy interface {
 type Entry struct {
 	UUID  uuid.UUID // Player’s UUID
 	Name  string    // Display name
-	Money int64     // Balance
+	Money float64   // Balance
 }
