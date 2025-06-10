@@ -1,6 +1,10 @@
 package economy
 
-import "github.com/google/uuid"
+import (
+	"context"
+
+	"github.com/google/uuid"
+)
 
 // Economy defines the interface for managing user balances and transactions
 // within an economic system. It provides methods to query balances, set balances,
@@ -11,9 +15,9 @@ import "github.com/google/uuid"
 //   - Set(id uuid.UUID, amount float64): Sets the user's balance to the specified amount.
 //   - Top(page, size int): Retrieves a paginated list of top entries based on balance.
 type Economy interface {
-	Balance(id uuid.UUID) (float64, error)
-	Set(id uuid.UUID, name *string, amount float64) error
-	Top(page, size int) ([]Entry, error)
+	Balance(ctx context.Context, id uuid.UUID) (float64, error)
+	Set(ctx context.Context, id uuid.UUID, name *string, amount float64) error
+	Top(ctx context.Context, page, size int) ([]Entry, error)
 }
 
 // Entry represents a single row in the balance leaderboard.

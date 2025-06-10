@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/google/uuid"
@@ -34,9 +35,9 @@ func initSchema(db *sql.DB) error {
 
 }
 
-func (s *svc) Balance(id uuid.UUID) (float64, error) {
+func (s *svc) Balance(ctx context.Context, id uuid.UUID) (float64, error) {
 	var amount float64
-	err := s.db.QueryRow("SELECT money FROM balances WHERE uuid = ?", id.String()).Scan(&amount)
+	err := s.db.QueryRowContext(ctx, "SELECT money FROM balances WHERE uuid = ?", id.String()).Scan(&amount)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return 0, economy.ErrUnknownPlayer
@@ -46,11 +47,11 @@ func (s *svc) Balance(id uuid.UUID) (float64, error) {
 	return amount, nil
 }
 
-func (s *svc) Set(id uuid.UUID, name *string, amount float64) error {
+func (s *svc) Set(ctx context.Context, id uuid.UUID, name *string, amount float64) error {
 	if amount < 0 {
 		return economy.ErrNegativeAmount
 	}
-	_, err := s.db.Exec(`
+	_, err := s.db.ExecContext(ctx, `
 		INSERT INTO balances (uuid, name ,money) VALUES (?,?,?)
 		ON CONFLICT (uuid) DO UPDATE 
 			SET money = excluded.money,
@@ -59,7 +60,7 @@ func (s *svc) Set(id uuid.UUID, name *string, amount float64) error {
 	return err
 }
 
-func (s *svc) Top(page, size int) ([]economy.Entry, error) {
+func (s *svc) Top(ctx context.Context, page, size int) ([]economy.Entry, error) {
 	// TODO
 	return nil, nil
 }
