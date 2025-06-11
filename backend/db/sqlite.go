@@ -1,4 +1,4 @@
-package sqlite
+package db
 
 import (
 	"context"
@@ -9,18 +9,22 @@ import (
 	"github.com/skuralll/dfeconomy/economy"
 )
 
-type svc struct {
+// SQLiteを使用したDBの実装
+type DBSQLite struct {
 	db *sql.DB
 }
 
-func New(db *sql.DB) economy.Economy {
+// 実装漏れチェック
+var _ DB = (*DBSQLite)(nil)
+
+func NewSQLite(db *sql.DB) *DBSQLite {
 	if db == nil {
 		panic("db cannot be nil")
 	}
 	if err := initSchema(db); err != nil {
 		panic(err)
 	}
-	return &svc{db: db}
+	return &DBSQLite{db: db}
 }
 
 func initSchema(db *sql.DB) error {
@@ -36,7 +40,7 @@ func initSchema(db *sql.DB) error {
 
 }
 
-func (s *svc) Balance(ctx context.Context, id uuid.UUID) (float64, error) {
+func (s *DBSQLite) Balance(ctx context.Context, id uuid.UUID) (float64, error) {
 	var amount float64
 	err := s.db.QueryRowContext(ctx, "SELECT money FROM balances WHERE uuid = ?", id.String()).Scan(&amount)
 	if err != nil {
@@ -48,7 +52,7 @@ func (s *svc) Balance(ctx context.Context, id uuid.UUID) (float64, error) {
 	return amount, nil
 }
 
-func (s *svc) Set(ctx context.Context, id uuid.UUID, name *string, amount float64) error {
+func (s *DBSQLite) Set(ctx context.Context, id uuid.UUID, name *string, amount float64) error {
 	if amount < 0 {
 		return economy.ErrNegativeAmount
 	}
@@ -61,10 +65,10 @@ func (s *svc) Set(ctx context.Context, id uuid.UUID, name *string, amount float6
 	return err
 }
 
-func (s *svc) Top(
+func (s *DBSQLite) Top(
 	ctx context.Context,
 	page, size int, // page 1-based, size > 0
-) ([]economy.Entry, error) {
+) ([]EconomyEntry, error) {
 
 	if size <= 0 {
 		return nil, errors.New("size must be positive")
@@ -85,7 +89,7 @@ func (s *svc) Top(
 	}
 	defer rows.Close()
 
-	var list []economy.Entry
+	var list []EconomyEntry
 	for rows.Next() {
 		var (
 			uStr  string
@@ -99,7 +103,7 @@ func (s *svc) Top(
 		if err != nil { // skip broken uuid
 			continue
 		}
-		list = append(list, economy.Entry{
+		list = append(list, EconomyEntry{
 			UUID:  u,
 			Name:  name.String,
 			Money: money,
