@@ -3,10 +3,9 @@ package db
 import (
 	"context"
 	"database/sql"
-	"errors"
 
 	"github.com/google/uuid"
-	economy "github.com/skuralll/dfeconomy/economy/service"
+	"github.com/skuralll/dfeconomy/errors"
 )
 
 // SQLiteを使用したDBの実装
@@ -45,7 +44,7 @@ func (s *DBSQLite) Balance(ctx context.Context, id uuid.UUID) (float64, error) {
 	err := s.db.QueryRowContext(ctx, "SELECT money FROM balances WHERE uuid = ?", id.String()).Scan(&amount)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return 0, economy.ErrUnknownPlayer
+			return 0, errors.ErrUnknownPlayer
 		}
 		return 0, err
 	}
@@ -54,7 +53,7 @@ func (s *DBSQLite) Balance(ctx context.Context, id uuid.UUID) (float64, error) {
 
 func (s *DBSQLite) Set(ctx context.Context, id uuid.UUID, name *string, amount float64) error {
 	if amount < 0 {
-		return economy.ErrNegativeAmount
+		return errors.ErrNegativeAmount
 	}
 	_, err := s.db.ExecContext(ctx, `
 		INSERT INTO balances (uuid, name ,money) VALUES (?,?,?)
@@ -71,7 +70,7 @@ func (s *DBSQLite) Top(
 ) ([]EconomyEntry, error) {
 
 	if size <= 0 {
-		return nil, errors.New("size must be positive")
+		return nil, errors.ErrPageNotFound
 	}
 	if page <= 0 {
 		page = 1
