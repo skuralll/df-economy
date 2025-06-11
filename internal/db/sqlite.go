@@ -6,7 +6,7 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
-	"github.com/skuralll/dfeconomy/economy"
+	economy "github.com/skuralll/dfeconomy/economy/service"
 )
 
 // SQLiteを使用したDBの実装
