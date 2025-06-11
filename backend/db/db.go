@@ -13,10 +13,10 @@ type EconomyEntry struct {
 }
 
 type DB interface {
-	// 残高取得
+	// Get balance
 	Balance(ctx context.Context, id uuid.UUID) (float64, error)
-	// 残高設定
+	// Set balance
 	Set(ctx context.Context, id uuid.UUID, name *string, amount float64) error
-	// 残高ランキング取得
+	// Get balance ranking
 	Top(ctx context.Context, page, size int) ([]EconomyEntry, error)
 }
