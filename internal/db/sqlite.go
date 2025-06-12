@@ -62,6 +62,7 @@ func (s *DBSQLite) Set(ctx context.Context, id uuid.UUID, name string, amount fl
 	return err
 }
 
+// todo:refactor
 func (s *DBSQLite) Top(
 	ctx context.Context,
 	page, size int, // page 1-based, size > 0
