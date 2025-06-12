@@ -51,10 +51,7 @@ func (s *DBSQLite) Balance(ctx context.Context, id uuid.UUID) (float64, error) {
 	return amount, nil
 }
 
-func (s *DBSQLite) Set(ctx context.Context, id uuid.UUID, name *string, amount float64) error {
-	if amount < 0 {
-		return errors.ErrNegativeAmount
-	}
+func (s *DBSQLite) Set(ctx context.Context, id uuid.UUID, name string, amount float64) error {
 	_, err := s.db.ExecContext(ctx, `
 		INSERT INTO balances (uuid, name ,money) VALUES (?,?,?)
 		ON CONFLICT (uuid) DO UPDATE 

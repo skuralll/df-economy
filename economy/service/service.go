@@ -5,6 +5,7 @@ import (
 	"database/sql"
 
 	"github.com/google/uuid"
+	"github.com/skuralll/dfeconomy/errors"
 	"github.com/skuralll/dfeconomy/internal/db"
 )
 
@@ -18,8 +19,6 @@ func NewEconomyService(dbsql *sql.DB) *EconomyService {
 	return &EconomyService{dbInstance}
 }
 
-// Set balance
-// Set(ctx context.Context, id uuid.UUID, name *string, amount float64) error
 // Get balance ranking
 // Top(ctx context.Context, page, size int) ([]EconomyEntry, error)
 
@@ -32,4 +31,13 @@ func (svc *EconomyService) GetBalance(ctx context.Context, id uuid.UUID) (float6
 		return 0, err
 	}
 	return amount, nil
+}
+
+// Set balance
+func (svc *EconomyService) SetBalance(ctx context.Context, id uuid.UUID, name string, amount float64) error {
+	if amount < 0 {
+		return errors.ErrNegativeAmount
+	}
+	result := svc.db.Set(ctx, id, name, amount)
+	return result
 }
