@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/skuralll/dfeconomy/errors"
+	"github.com/skuralll/dfeconomy/models"
 )
 
 // SQLiteを使用したDBの実装
@@ -64,14 +65,7 @@ func (s *DBSQLite) Set(ctx context.Context, id uuid.UUID, name string, amount fl
 func (s *DBSQLite) Top(
 	ctx context.Context,
 	page, size int, // page 1-based, size > 0
-) ([]EconomyEntry, error) {
-
-	if size <= 0 {
-		return nil, errors.ErrPageNotFound
-	}
-	if page <= 0 {
-		page = 1
-	}
+) ([]models.EconomyEntry, error) {
 	offset := (page - 1) * size
 
 	rows, err := s.db.QueryContext(ctx, `
@@ -85,7 +79,7 @@ func (s *DBSQLite) Top(
 	}
 	defer rows.Close()
 
-	var list []EconomyEntry
+	var list []models.EconomyEntry
 	for rows.Next() {
 		var (
 			uStr  string
@@ -99,7 +93,7 @@ func (s *DBSQLite) Top(
 		if err != nil { // skip broken uuid
 			continue
 		}
-		list = append(list, EconomyEntry{
+		list = append(list, models.EconomyEntry{
 			UUID:  u,
 			Name:  name.String,
 			Money: money,

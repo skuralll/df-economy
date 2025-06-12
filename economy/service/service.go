@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/skuralll/dfeconomy/errors"
 	"github.com/skuralll/dfeconomy/internal/db"
+	"github.com/skuralll/dfeconomy/models"
 )
 
 type EconomyService struct {
@@ -18,9 +19,6 @@ func NewEconomyService(dbsql *sql.DB) *EconomyService {
 	dbInstance := db.NewSQLite(dbsql) // TODO: Support multiple databases
 	return &EconomyService{dbInstance}
 }
-
-// Get balance ranking
-// Top(ctx context.Context, page, size int) ([]EconomyEntry, error)
 
 // TODO: Move validation logic in db to the service. The db should only operate the database based on the received values.
 
@@ -40,4 +38,21 @@ func (svc *EconomyService) SetBalance(ctx context.Context, id uuid.UUID, name st
 	}
 	result := svc.db.Set(ctx, id, name, amount)
 	return result
+}
+
+// Get balance ranking
+func (svc *EconomyService) GetTopBalances(ctx context.Context, page, size int) ([]models.EconomyEntry, error) {
+	// validation
+	if size <= 0 {
+		return nil, errors.ErrValueMustBeAtLeastOne
+	}
+	if page <= 0 {
+		return nil, errors.ErrPageNotFound
+	}
+	// get result
+	list, err := svc.db.Top(ctx, page, size)
+	if err != nil {
+		return nil, err
+	}
+	return list, nil
 }
