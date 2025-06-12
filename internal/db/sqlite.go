@@ -9,13 +9,38 @@ import (
 	"github.com/skuralll/dfeconomy/models"
 )
 
-// SQLiteを使用したDBの実装
+// Implementation of DB using SQLite
 type DBSQLite struct {
 	db *sql.DB
 }
 
-// 実装漏れチェック
+type SQLiteConfig struct {
+	Path string
+}
+
+// Implementation completeness check
 var _ DB = (*DBSQLite)(nil)
+
+func NewSQLiteFromConfig(config *SQLiteConfig) (*DBSQLite, func(), error) {
+	db, err := sql.Open("sqlite3", config.Path)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// test connection
+	if err := db.Ping(); err != nil {
+		db.Close()
+		return nil, nil, err
+	}
+
+	// create lambda function
+	sqliteDB := NewSQLite(db)
+	cleanup := func() {
+		sqliteDB.db.Close()
+	}
+
+	return sqliteDB, cleanup, nil
+}
 
 func NewSQLite(db *sql.DB) *DBSQLite {
 	if db == nil {
