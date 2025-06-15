@@ -3,9 +3,11 @@ package db
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/google/uuid"
-	"github.com/skuralll/dfeconomy/errors"
+	_ "github.com/mattn/go-sqlite3"
+	ecerrors "github.com/skuralll/dfeconomy/errors"
 	"github.com/skuralll/dfeconomy/models"
 )
 
@@ -18,7 +20,7 @@ type SQLiteConfig struct {
 	Path string
 }
 
-// Implementation completeness check
+// Implementation completeness checks
 var _ DB = (*DBSQLite)(nil)
 
 func NewSQLiteFromConfig(config *SQLiteConfig) (*DBSQLite, func(), error) {
@@ -34,22 +36,26 @@ func NewSQLiteFromConfig(config *SQLiteConfig) (*DBSQLite, func(), error) {
 	}
 
 	// create lambda function
-	sqliteDB := NewSQLite(db)
-	cleanup := func() {
-		sqliteDB.db.Close()
+	sqliteDB, cleanup, err := NewSQLite(db)
+	if err != nil {
+		db.Close()
+		return nil, nil, err
 	}
 
 	return sqliteDB, cleanup, nil
 }
 
-func NewSQLite(db *sql.DB) *DBSQLite {
+func NewSQLite(db *sql.DB) (*DBSQLite, func(), error) {
 	if db == nil {
-		panic("db cannot be nil")
+		return nil, nil, errors.New("db cannot be nil")
 	}
 	if err := initSchema(db); err != nil {
-		panic(err)
+		return nil, nil, err
 	}
-	return &DBSQLite{db: db}
+	cleanup := func() {
+		db.Close()
+	}
+	return &DBSQLite{db}, cleanup, nil
 }
 
 func initSchema(db *sql.DB) error {
@@ -62,7 +68,6 @@ func initSchema(db *sql.DB) error {
 		);
 	`)
 	return err
-
 }
 
 func (s *DBSQLite) Balance(ctx context.Context, id uuid.UUID) (float64, error) {
@@ -70,7 +75,7 @@ func (s *DBSQLite) Balance(ctx context.Context, id uuid.UUID) (float64, error) {
 	err := s.db.QueryRowContext(ctx, "SELECT money FROM balances WHERE uuid = ?", id.String()).Scan(&amount)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return 0, errors.ErrUnknownPlayer
+			return 0, ecerrors.ErrUnknownPlayer
 		}
 		return 0, err
 	}
@@ -129,4 +134,22 @@ func (s *DBSQLite) Top(
 		return nil, err
 	}
 	return list, nil
+}
+
+// GetUUIDByName implements DB.
+func (s *DBSQLite) GetUUIDByName(ctx context.Context, name string) (uuid.UUID, error) {
+	var uStr string
+	err := s.db.QueryRowContext(ctx, "SELECT uuid FROM balances WHERE name = ?", name).Scan(&uStr)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return uuid.Nil, ecerrors.ErrUnknownPlayer
+		}
+		return uuid.Nil, err
+	}
+	// convert string to uuid
+	u, err := uuid.Parse(uStr)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	return u, nil
 }
