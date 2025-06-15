@@ -76,3 +76,12 @@ func (svc *EconomyService) GetTopBalances(ctx context.Context, page, size int) (
 	}
 	return list, nil
 }
+
+// GetUUIDByName retrieves the UUID of a player by their name.
+func (svc *EconomyService) GetUUIDByName(ctx context.Context, name string) (uuid.UUID, error) {
+	uid, err := svc.db.GetUUIDByName(ctx, name)
+	if err != nil {
+		return uuid.Nil, errors.ErrUnknownPlayer
+	}
+	return uid, nil
+}

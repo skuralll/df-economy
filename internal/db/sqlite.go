@@ -135,3 +135,21 @@ func (s *DBSQLite) Top(
 	}
 	return list, nil
 }
+
+// GetUUIDByName implements DB.
+func (s *DBSQLite) GetUUIDByName(ctx context.Context, name string) (uuid.UUID, error) {
+	var uStr string
+	err := s.db.QueryRowContext(ctx, "SELECT uuid FROM balances WHERE name = ?", name).Scan(&uStr)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return uuid.Nil, ecerrors.ErrUnknownPlayer
+		}
+		return uuid.Nil, err
+	}
+	// convert string to uuid
+	u, err := uuid.Parse(uStr)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	return u, nil
+}
