@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/google/uuid"
 	"github.com/skuralll/dfeconomy/errors"
@@ -15,9 +14,12 @@ type EconomyService struct {
 }
 
 // Get new EconomyService instance
-func NewEconomyService(dbsql *sql.DB) *EconomyService {
-	dbInstance := db.NewSQLite(dbsql) // TODO: Support multiple databases
-	return &EconomyService{dbInstance}
+func NewEconomyService() (*EconomyService, func(), error) {
+	dbInstance, cleanup, err := db.NewSQLiteFromConfig(&db.SQLiteConfig{Path: "./foo.db"}) // TODO: Support multiple databases
+	if err != nil {
+		return nil, nil, err
+	}
+	return &EconomyService{dbInstance}, cleanup, nil
 }
 
 // TODO: Move validation logic in db to the service. The db should only operate the database based on the received values.

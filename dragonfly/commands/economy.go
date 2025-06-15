@@ -8,7 +8,9 @@ import (
 
 // /economy
 
-type EconomyCommand struct{}
+type EconomyCommand struct {
+	*BaseCommand
+}
 
 func (c EconomyCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 	o.Printf("Executed: /economy")
@@ -17,6 +19,7 @@ func (c EconomyCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 // /economy balance <target>
 
 type EconomyBalanceCommand struct {
+	*BaseCommand
 	SubCmd   cmd.SubCommand       `cmd:"balance" help:"Displays the balance of a player."`
 	Username cmd.Optional[string] `cmd:"username"`
 }
