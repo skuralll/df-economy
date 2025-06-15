@@ -4,6 +4,7 @@ import (
 	"log/slog"
 
 	"github.com/df-mc/dragonfly/server"
+	"github.com/skuralll/dfeconomy/dragonfly/commands"
 )
 
 // plugin instance
@@ -15,6 +16,7 @@ func NewDfEconomyPlugin() *DfEconomyPlugin {
 }
 
 func (p *DfEconomyPlugin) Enable(srv *server.Server) error {
+	commands.RegisterCommands()
 	slog.Info("DfEconomy plugin enabled")
 	return nil
 }
