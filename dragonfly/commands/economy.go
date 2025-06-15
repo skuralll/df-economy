@@ -16,7 +16,7 @@ type EconomyCommand struct {
 }
 
 func (c EconomyCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
-	o.Printf("Executed: /economy")
+	o.Printf("help: TODO")
 }
 
 // /economy balance <target>
@@ -53,8 +53,6 @@ func (e EconomyBalanceCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) 
 		return
 	}
 	o.Printf("Balance of %s: %.2f", tn, amount)
-
-	o.Printf("Executed: /economy balance %s", e.Username.LoadOr(p.Name()))
 }
 
 // Validation

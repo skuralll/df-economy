@@ -12,5 +12,5 @@ type BaseCommand struct {
 func RegisterCommands(svc *service.EconomyService) {
 	baseCmd := &BaseCommand{svc: svc}
 	// Fill in the required fields for EconomyBalanceCommand as needed
-	cmd.Register(cmd.New("economy", "Displays economy-related information.", nil, &EconomyCommand{baseCmd}, &EconomyBalanceCommand{BaseCommand: baseCmd}))
+	cmd.Register(cmd.New("economy", "Displays economy-related information.", nil, &EconomyBalanceCommand{BaseCommand: baseCmd}, &EconomyCommand{baseCmd}))
 }
