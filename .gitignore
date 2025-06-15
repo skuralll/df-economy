@@ -33,3 +33,4 @@ go.work.sum
 
 # dragonfly save-data
 savedata
+*.db
