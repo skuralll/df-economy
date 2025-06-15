@@ -37,6 +37,6 @@ func (p *DfEconomyPlugin) Enable(srv *server.Server) error {
 
 // Disable is called when the plugin is disabled by the server.
 func (p *DfEconomyPlugin) Disable() error {
-	slog.Info("DfEconomy plugin enabled")
+	slog.Info("DfEconomy plugin disabled")
 	return nil
 }
