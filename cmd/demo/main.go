@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
@@ -32,6 +33,7 @@ func main() {
 	srv.Listen()
 	for p := range srv.Accept() {
 		_ = p
+		ecPlugin.Service.RegisterUser(context.Background(), p.UUID(), p.Name())
 	}
 }
 

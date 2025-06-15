@@ -10,7 +10,7 @@ import (
 
 // plugin instance
 type DfEconomyPlugin struct {
-	svc          *service.EconomyService
+	Service      *service.EconomyService
 	cleanupFuncs []func()
 }
 
@@ -26,10 +26,10 @@ func (p *DfEconomyPlugin) Enable(srv *server.Server) error {
 	if err != nil {
 		slog.Error("Failed to create economy service", "error", err)
 	}
-	p.svc = svc
+	p.Service = svc
 	p.cleanupFuncs = append(p.cleanupFuncs, cleanup)
 	// register commands
-	commands.RegisterCommands(p.svc)
+	commands.RegisterCommands(p.Service)
 
 	slog.Info("DfEconomy plugin enabled")
 	return nil
