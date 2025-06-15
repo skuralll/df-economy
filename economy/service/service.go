@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/google/uuid"
 	"github.com/skuralll/dfeconomy/errors"
@@ -23,6 +24,23 @@ func NewEconomyService() (*EconomyService, func(), error) {
 }
 
 // TODO: Move validation logic in db to the service. The db should only operate the database based on the received values.
+
+// Register a new user
+func (svc *EconomyService) RegisterUser(ctx context.Context, id uuid.UUID, name string) (bool, error) {
+	// Check if user already exists
+	_, err := svc.db.Balance(ctx, id)
+	if err == nil {
+		// User already exists
+		return false, nil
+	}
+	// Register new user with 0 balance
+	err = svc.db.Set(ctx, id, name, 0)
+	if err != nil {
+		return false, err
+	}
+	slog.Info("New user registered", "id", id, "name", name)
+	return true, nil
+}
 
 // Get balance
 func (svc *EconomyService) GetBalance(ctx context.Context, id uuid.UUID) (float64, error) {
