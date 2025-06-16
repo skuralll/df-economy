@@ -55,6 +55,20 @@ func (e EconomyBalanceCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) 
 	o.Printf("Balance of %s: %.2f", tn, amount)
 }
 
+// /economy set <target> <amount>
+
+type EconomySetCommand struct {
+	*BaseCommand
+	SubCmd   cmd.SubCommand `cmd:"set" help:"Set the balance of a player."`
+	Username string         `cmd:"username"`
+	Amount   float32        `cmd:"amount"`
+}
+
+func (e EconomySetCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
+
+}
+
 // Validation
 var _ cmd.Runnable = (*EconomyCommand)(nil)
 var _ cmd.Runnable = (*EconomyBalanceCommand)(nil)
+var _ cmd.Runnable = (*EconomySetCommand)(nil)
