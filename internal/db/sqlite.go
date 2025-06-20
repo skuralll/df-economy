@@ -6,7 +6,7 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 	ecerrors "github.com/skuralll/dfeconomy/errors"
 	"github.com/skuralll/dfeconomy/models"
 )
@@ -24,7 +24,7 @@ type SQLiteConfig struct {
 var _ DB = (*DBSQLite)(nil)
 
 func NewSQLiteFromConfig(config *SQLiteConfig) (*DBSQLite, func(), error) {
-	db, err := sql.Open("sqlite3", config.Path)
+	db, err := sql.Open("sqlite", config.Path)
 	if err != nil {
 		return nil, nil, err
 	}
