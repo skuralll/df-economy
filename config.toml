@@ -20,4 +20,4 @@
 
 [World]
   Folder = "savedata/world"
-  SaveData = false
+  SaveData = true

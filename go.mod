@@ -5,6 +5,7 @@ go 1.23.9
 require (
 	github.com/df-mc/dragonfly v0.10.4
 	github.com/google/uuid v1.6.0
+	github.com/mattn/go-sqlite3 v1.14.28
 	github.com/pelletier/go-toml v1.9.5
 )
 

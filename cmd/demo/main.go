@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
@@ -8,6 +9,7 @@ import (
 	"github.com/df-mc/dragonfly/server"
 	"github.com/df-mc/dragonfly/server/player/chat"
 	"github.com/pelletier/go-toml"
+	"github.com/skuralll/dfeconomy"
 )
 
 func main() {
@@ -21,9 +23,17 @@ func main() {
 	srv := conf.New()
 	srv.CloseOnProgramEnd()
 
+	ecPlugin := dfeconomy.NewDfEconomyPlugin()
+	if err := ecPlugin.Enable(srv); err != nil {
+		slog.Error("Failed to enable DfEconomy plugin", "error", err)
+		os.Exit(1)
+	}
+	defer ecPlugin.Disable()
+
 	srv.Listen()
 	for p := range srv.Accept() {
 		_ = p
+		ecPlugin.Service.RegisterUser(context.Background(), p.UUID(), p.Name())
 	}
 }
 

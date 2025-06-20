@@ -14,4 +14,6 @@ type DB interface {
 	Set(ctx context.Context, id uuid.UUID, name string, amount float64) error
 	// Get balance ranking
 	Top(ctx context.Context, page, size int) ([]models.EconomyEntry, error)
+	// Get uuid by name
+	GetUUIDByName(ctx context.Context, name string) (uuid.UUID, error)
 }
