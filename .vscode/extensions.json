@@ -1,0 +1,15 @@
+{
+  "recommendations": [
+    "usernamehw.errorlens",
+    "mhutchie.git-graph",
+    "eamodio.gitlens",
+    "streetsidesoftware.code-spell-checker",
+    "naumovs.color-highlight",
+    "GitHub.vscode-pull-request-github",
+    "golang.go",
+    "premparihar.gotest",
+    "tamasfe.even-better-toml",
+    "yzhang.markdown-all-in-one",
+    "qwtel.sqlite-viewer"
+  ]
+}
