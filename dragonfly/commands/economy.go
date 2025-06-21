@@ -131,8 +131,22 @@ func (e EconomyTopCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 	}
 }
 
+// /economy pay <target> <amount>
+
+type EconomyPayCommand struct {
+	*BaseCommand
+	SubCmd   cmd.SubCommand `cmd:"pay" help:"Pay a player."`
+	Username string         `cmd:"username"`
+	Amount   float64        `cmd:"amount"`
+}
+
+func (e EconomyPayCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
+
+}
+
 // Validation
 var _ cmd.Runnable = (*EconomyCommand)(nil)
 var _ cmd.Runnable = (*EconomyBalanceCommand)(nil)
 var _ cmd.Runnable = (*EconomySetCommand)(nil)
 var _ cmd.Runnable = (*EconomyTopCommand)(nil)
+var _ cmd.Runnable = (*EconomyPayCommand)(nil)
