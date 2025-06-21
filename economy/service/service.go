@@ -71,8 +71,12 @@ func (svc *EconomyService) GetTopBalances(ctx context.Context, page, size int) (
 	}
 	// get result
 	list, err := svc.db.Top(ctx, page, size)
+	// error handle
 	if err != nil {
 		return nil, err
+	}
+	if len(list) == 0 {
+		return nil, errors.ErrPageNotFound
 	}
 	return list, nil
 }

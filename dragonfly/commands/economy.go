@@ -117,10 +117,10 @@ func (e EconomyTopCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 	}
 	entries, err := e.svc.GetTopBalances(context.Background(), e.Page, itemCount)
 	if err != nil {
-		if errors.Is(err, dfErrors.ErrPageNotFound) {
-			o.Error("Page not found")
-		} else if errors.Is(err, dfErrors.ErrValueMustBeAtLeastOne) {
+		if errors.Is(err, dfErrors.ErrValueMustBeAtLeastOne) {
 			o.Error("Size must be at least 1")
+		} else if errors.Is(err, dfErrors.ErrPageNotFound) {
+			o.Error("Page not found")
 		} else {
 			o.Error("Failed to get top balances by internal error")
 		}

@@ -15,6 +15,7 @@ func RegisterCommands(svc *service.EconomyService) {
 	cmd.Register(cmd.New("economy", "Displays economy-related information.", nil,
 		&EconomyBalanceCommand{BaseCommand: baseCmd},
 		&EconomySetCommand{BaseCommand: baseCmd},
+		&EconomyTopCommand{BaseCommand: baseCmd},
 		&EconomyCommand{baseCmd},
 	))
 }
