@@ -141,7 +141,38 @@ type EconomyPayCommand struct {
 }
 
 func (e EconomyPayCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
-
+	p, ok := src.(*player.Player)
+	if !ok {
+		o.Error("Execute as a player")
+		return
+	}
+	// get target uuid
+	tuid, err := e.svc.GetUUIDByName(context.Background(), e.Username)
+	if err != nil {
+		o.Error("Player not found: " + e.Username)
+		return
+	}
+	// check balance
+	pBal, err := e.svc.GetBalance(context.Background(), p.UUID())
+	if err != nil {
+		o.Error("Failed to retrieve your balance")
+		return
+	}
+	if pBal < e.Amount {
+		o.Error("Insufficient funds")
+		return
+	}
+	// check target balance
+	tBal, err := e.svc.GetBalance(context.Background(), tuid)
+	if err != nil {
+		o.Error("Failed to retrieve target's balance")
+		return
+	}
+	// pay
+	e.svc.SetBalance(context.Background(), p.UUID(), p.Name(), pBal-e.Amount)
+	o.Printf("You paid %.2f to %s", e.Amount, e.Username)
+	e.svc.SetBalance(context.Background(), tuid, e.Username, tBal+e.Amount)
+	// todo?: send message to target
 }
 
 // Validation
