@@ -124,6 +124,7 @@ func (e EconomyTopCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 		} else {
 			o.Error("Failed to get top balances by internal error")
 		}
+		return
 	}
 	for i, entry := range entries {
 		o.Printf("#%d %s: %.2f", (e.Page-1)*itemCount+i+1, entry.Name, entry.Money)
