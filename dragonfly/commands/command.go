@@ -16,6 +16,7 @@ func RegisterCommands(svc *service.EconomyService) {
 		&EconomyBalanceCommand{BaseCommand: baseCmd},
 		&EconomySetCommand{BaseCommand: baseCmd},
 		&EconomyTopCommand{BaseCommand: baseCmd},
+		&EconomyPayCommand{BaseCommand: baseCmd},
 		&EconomyCommand{baseCmd},
 	))
 }
