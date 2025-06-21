@@ -2,11 +2,14 @@ package commands
 
 import (
 	"context"
+	"errors"
 
 	"github.com/df-mc/dragonfly/server/cmd"
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/world"
 	"github.com/google/uuid"
+
+	dfErrors "github.com/skuralll/dfeconomy/errors"
 )
 
 // /economy
@@ -96,7 +99,39 @@ func (e EconomySetCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 	o.Printf("Set balance of %s to %.2f", e.Username, e.Amount)
 }
 
+// /economy top <page>
+
+const itemCount int = 10 // Number of items per page
+
+type EconomyTopCommand struct {
+	*BaseCommand
+	SubCmd cmd.SubCommand `cmd:"top" help:"Show the top players by balance."`
+	Page   int            `cmd:"page" help:"The page to show."`
+}
+
+func (e EconomyTopCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
+	_, ok := src.(*player.Player)
+	if !ok {
+		o.Error("Execute as a player")
+		return
+	}
+	entries, err := e.svc.GetTopBalances(context.Background(), e.Page, itemCount)
+	if err != nil {
+		if errors.Is(err, dfErrors.ErrPageNotFound) {
+			o.Error("Page not found")
+		} else if errors.Is(err, dfErrors.ErrValueMustBeAtLeastOne) {
+			o.Error("Size must be at least 1")
+		} else {
+			o.Error("Failed to get top balances by internal error")
+		}
+	}
+	for i, entry := range entries {
+		o.Printf("#%d %s: %.2f", (e.Page-1)*itemCount+i+1, entry.Name, entry.Money)
+	}
+}
+
 // Validation
 var _ cmd.Runnable = (*EconomyCommand)(nil)
 var _ cmd.Runnable = (*EconomyBalanceCommand)(nil)
 var _ cmd.Runnable = (*EconomySetCommand)(nil)
+var _ cmd.Runnable = (*EconomyTopCommand)(nil)

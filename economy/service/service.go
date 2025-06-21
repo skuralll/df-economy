@@ -83,5 +83,6 @@ func (svc *EconomyService) GetUUIDByName(ctx context.Context, name string) (uuid
 	if err != nil {
 		return uuid.Nil, errors.ErrUnknownPlayer
 	}
+
 	return uid, nil
 }
