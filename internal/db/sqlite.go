@@ -117,7 +117,7 @@ func (s *DBSQLite) Transfer(ctx context.Context, fromID uuid.UUID, toID uuid.UUI
 	}
 
 	// Check receiver exists within transaction
-	var receiverExists bool
+	var receiverExists int
 	err = tx.QueryRowContext(ctx, "SELECT 1 FROM balances WHERE uuid = ?", toID.String()).Scan(&receiverExists)
 	if err != nil {
 		if err == sql.ErrNoRows {
