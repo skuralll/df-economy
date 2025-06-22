@@ -60,6 +60,15 @@ func (svc *EconomyService) SetBalance(ctx context.Context, id uuid.UUID, name st
 	return result
 }
 
+// Transfer balance
+func (svc *EconomyService) TransferBalance(ctx context.Context, fromID, toID uuid.UUID, amount float64) error {
+	if fromID == toID {
+		return errors.ErrCannotTargetSelf
+	}
+	err := svc.db.Transfer(ctx, fromID, toID, amount)
+	return err
+}
+
 // Get balance ranking
 func (svc *EconomyService) GetTopBalances(ctx context.Context, page, size int) ([]models.EconomyEntry, error) {
 	// validation

@@ -6,9 +6,9 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
-	_ "modernc.org/sqlite"
 	ecerrors "github.com/skuralll/dfeconomy/errors"
 	"github.com/skuralll/dfeconomy/models"
+	_ "modernc.org/sqlite"
 )
 
 // Implementation of DB using SQLite
@@ -90,6 +90,73 @@ func (s *DBSQLite) Set(ctx context.Context, id uuid.UUID, name string, amount fl
 					name = COALESCE(excluded.name, balances.name)
 	`, id.String(), name, amount)
 	return err
+}
+
+func (s *DBSQLite) Transfer(ctx context.Context, fromID uuid.UUID, toID uuid.UUID, amount float64) error {
+	if amount <= 0 {
+		return ecerrors.ErrValueMustBeAtLeastOne
+	}
+
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback() // rollback on error
+
+	// Check sender balance within transaction
+	var fromBalance float64
+	err = tx.QueryRowContext(ctx, "SELECT money FROM balances WHERE uuid = ?", fromID.String()).Scan(&fromBalance)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return ecerrors.ErrUnknownPlayer
+		}
+		return err
+	}
+	if fromBalance < amount {
+		return ecerrors.ErrInsufficientFunds
+	}
+
+	// Check receiver exists within transaction
+	var receiverExists int
+	err = tx.QueryRowContext(ctx, "SELECT 1 FROM balances WHERE uuid = ?", toID.String()).Scan(&receiverExists)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return ecerrors.ErrUnknownPlayer
+		}
+		return err
+	}
+
+	// Deduct from sender
+	result, err := tx.ExecContext(ctx, `
+		UPDATE balances SET money = money - ? WHERE uuid = ?
+	`, amount, fromID.String())
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return ecerrors.ErrUnknownPlayer
+	}
+
+	// Add to receiver
+	result, err = tx.ExecContext(ctx, `
+		UPDATE balances SET money = money + ? WHERE uuid = ?
+	`, amount, toID.String())
+	if err != nil {
+		return err
+	}
+	rowsAffected, err = result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return ecerrors.ErrUnknownPlayer
+	}
+
+	return tx.Commit()
 }
 
 // todo:refactor
