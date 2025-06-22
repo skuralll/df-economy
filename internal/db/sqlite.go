@@ -127,19 +127,33 @@ func (s *DBSQLite) Transfer(ctx context.Context, fromID uuid.UUID, toID uuid.UUI
 	}
 
 	// Deduct from sender
-	_, err = tx.ExecContext(ctx, `
+	result, err := tx.ExecContext(ctx, `
 		UPDATE balances SET money = money - ? WHERE uuid = ?
 	`, amount, fromID.String())
 	if err != nil {
 		return err
 	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return ecerrors.ErrUnknownPlayer
+	}
 
 	// Add to receiver
-	_, err = tx.ExecContext(ctx, `
+	result, err = tx.ExecContext(ctx, `
 		UPDATE balances SET money = money + ? WHERE uuid = ?
 	`, amount, toID.String())
 	if err != nil {
 		return err
+	}
+	rowsAffected, err = result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return ecerrors.ErrUnknownPlayer
 	}
 
 	return tx.Commit()
