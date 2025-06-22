@@ -6,9 +6,9 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
-	_ "modernc.org/sqlite"
 	ecerrors "github.com/skuralll/dfeconomy/errors"
 	"github.com/skuralll/dfeconomy/models"
+	_ "modernc.org/sqlite"
 )
 
 // Implementation of DB using SQLite
@@ -90,6 +90,33 @@ func (s *DBSQLite) Set(ctx context.Context, id uuid.UUID, name string, amount fl
 					name = COALESCE(excluded.name, balances.name)
 	`, id.String(), name, amount)
 	return err
+}
+
+func (s *DBSQLite) Transfer(ctx context.Context, fromID uuid.UUID, toID uuid.UUID, amount float64) error {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback() // rollback on error
+
+	// Deduct from sender
+	_, err = tx.ExecContext(ctx, `
+		UPDATE balances SET money = money - ? WHERE uuid = ?
+	`, amount, fromID.String())
+	if err != nil {
+		return err
+	}
+
+	// Add to receiver
+	_, err = tx.ExecContext(ctx, `
+		INSERT INTO balances (uuid, money) VALUES (?, ?)
+		ON CONFLICT (uuid) DO UPDATE SET money = money + excluded.money
+	`, toID.String(), amount)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }
 
 // todo:refactor

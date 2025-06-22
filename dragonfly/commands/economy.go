@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 	"errors"
+	"log/slog"
 
 	"github.com/df-mc/dragonfly/server/cmd"
 	"github.com/df-mc/dragonfly/server/player"
@@ -152,27 +153,26 @@ func (e EconomyPayCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 		o.Error("Player not found: " + e.Username)
 		return
 	}
-	// check balance
-	pBal, err := e.svc.GetBalance(context.Background(), p.UUID())
+	err = e.svc.TransferBalance(context.Background(), p.UUID(), tuid, e.Amount)
 	if err != nil {
-		o.Error("Failed to retrieve your balance")
-		return
+		switch {
+		case errors.Is(err, dfErrors.ErrValueMustBeAtLeastOne):
+			o.Error("Amount must be at least 1")
+			return
+		case errors.Is(err, dfErrors.ErrInsufficientFunds):
+			o.Error("Insufficient funds")
+			return
+		case errors.Is(err, dfErrors.ErrUnknownPlayer):
+			o.Error("Target player not found: " + e.Username)
+			return
+		default:
+			o.Error("Failed to pay by internal error")
+			slog.Error("Failed to pay", "error", err, "from", p.Name(), "to", e.Username, "amount", e.Amount)
+			return
+		}
 	}
-	if pBal < e.Amount {
-		o.Error("Insufficient funds")
-		return
-	}
-	// check target balance
-	tBal, err := e.svc.GetBalance(context.Background(), tuid)
-	if err != nil {
-		o.Error("Failed to retrieve target's balance")
-		return
-	}
-	// pay
-	e.svc.SetBalance(context.Background(), p.UUID(), p.Name(), pBal-e.Amount)
+	// success
 	o.Printf("You paid %.2f to %s", e.Amount, e.Username)
-	e.svc.SetBalance(context.Background(), tuid, e.Username, tBal+e.Amount)
-	// todo?: send message to target
 }
 
 // Validation
