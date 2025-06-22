@@ -93,11 +93,38 @@ func (s *DBSQLite) Set(ctx context.Context, id uuid.UUID, name string, amount fl
 }
 
 func (s *DBSQLite) Transfer(ctx context.Context, fromID uuid.UUID, toID uuid.UUID, amount float64) error {
+	if amount <= 0 {
+		return ecerrors.ErrValueMustBeAtLeastOne
+	}
+
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback() // rollback on error
+
+	// Check sender balance within transaction
+	var fromBalance float64
+	err = tx.QueryRowContext(ctx, "SELECT money FROM balances WHERE uuid = ?", fromID.String()).Scan(&fromBalance)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return ecerrors.ErrUnknownPlayer
+		}
+		return err
+	}
+	if fromBalance < amount {
+		return ecerrors.ErrInsufficientFunds
+	}
+
+	// Check receiver exists within transaction
+	var receiverExists bool
+	err = tx.QueryRowContext(ctx, "SELECT 1 FROM balances WHERE uuid = ?", toID.String()).Scan(&receiverExists)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return ecerrors.ErrUnknownPlayer
+		}
+		return err
+	}
 
 	// Deduct from sender
 	_, err = tx.ExecContext(ctx, `
@@ -109,9 +136,8 @@ func (s *DBSQLite) Transfer(ctx context.Context, fromID uuid.UUID, toID uuid.UUI
 
 	// Add to receiver
 	_, err = tx.ExecContext(ctx, `
-		INSERT INTO balances (uuid, money) VALUES (?, ?)
-		ON CONFLICT (uuid) DO UPDATE SET money = money + excluded.money
-	`, toID.String(), amount)
+		UPDATE balances SET money = money + ? WHERE uuid = ?
+	`, amount, toID.String())
 	if err != nil {
 		return err
 	}

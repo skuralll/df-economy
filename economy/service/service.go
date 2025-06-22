@@ -62,23 +62,8 @@ func (svc *EconomyService) SetBalance(ctx context.Context, id uuid.UUID, name st
 
 // Transfer balance
 func (svc *EconomyService) TransferBalance(ctx context.Context, fromID, toID uuid.UUID, amount float64) error {
-	// validation
-	if amount <= 0 {
-		return errors.ErrValueMustBeAtLeastOne
-	}
-	fromBal, err := svc.db.Balance(ctx, fromID)
-	if err != nil {
-		return err
-	}
-	if fromBal < amount {
-		return errors.ErrInsufficientFunds
-	}
-	_, err = svc.db.Balance(ctx, toID)
-	if err != nil {
-		return errors.ErrUnknownPlayer
-	}
-	// transfer balance
-	err = svc.db.Transfer(ctx, fromID, toID, amount)
+	// transfer balance - validation is now handled within the DB transaction
+	err := svc.db.Transfer(ctx, fromID, toID, amount)
 	return err
 }
 
