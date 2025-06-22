@@ -62,7 +62,9 @@ func (svc *EconomyService) SetBalance(ctx context.Context, id uuid.UUID, name st
 
 // Transfer balance
 func (svc *EconomyService) TransferBalance(ctx context.Context, fromID, toID uuid.UUID, amount float64) error {
-	// transfer balance - validation is now handled within the DB transaction
+	if fromID == toID {
+		return errors.ErrCannotTargetSelf
+	}
 	err := svc.db.Transfer(ctx, fromID, toID, amount)
 	return err
 }
