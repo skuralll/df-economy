@@ -2,6 +2,9 @@ package commands
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"time"
 
 	"github.com/df-mc/dragonfly/server/cmd"
 	"github.com/df-mc/dragonfly/server/player"
@@ -23,27 +26,47 @@ func (e EconomyBalanceCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) 
 		o.Error("Execute as a player")
 		return
 	}
-	// get target uuid
-	tn := e.Username.LoadOr(p.Name())
-	var uid uuid.UUID
-	if tn == p.Name() {
-		uid = p.UUID()
-	} else {
-		// get uuid by name
-		var err error
-		uid, err = e.svc.GetUUIDByName(context.Background(), tn)
+
+	// 即座にフィードバック
+	o.Printf("Fetching balance...")
+
+	go func() {
+		// タイムアウト付きでDB処理
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		// get target uuid
+		tn := e.Username.LoadOr(p.Name())
+		var uid uuid.UUID
+		if tn == p.Name() {
+			uid = p.UUID()
+		} else {
+			// get uuid by name
+			var err error
+			uid, err = e.svc.GetUUIDByName(ctx, tn)
+			if err != nil {
+				if errors.Is(err, context.DeadlineExceeded) {
+					p.Message("§c[Error] Request timeout")
+				} else {
+					p.Message("§c[Error] Player not found: " + tn)
+				}
+				return
+			}
+		}
+
+		// get balance
+		amount, err := e.svc.GetBalance(ctx, uid)
 		if err != nil {
-			o.Error("Player not found: " + tn)
+			if errors.Is(err, context.DeadlineExceeded) {
+				p.Message("§c[Error] Request timeout")
+			} else {
+				p.Message("§c[Error] Failed to get balance")
+			}
 			return
 		}
-	}
-	// get balance
-	amount, err := e.svc.GetBalance(context.Background(), uid)
-	if err != nil {
-		o.Error("Failed to get balance")
-		return
-	}
-	o.Printf("Balance of %s: %.2f", tn, amount)
+		// 結果を直接送信
+		p.Message(fmt.Sprintf("§a[Balance] %s: %.2f", tn, amount))
+	}()
 }
 
 // Validation
