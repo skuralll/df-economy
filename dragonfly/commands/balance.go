@@ -27,6 +27,9 @@ func (e EconomyBalanceCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) 
 		return
 	}
 
+	// Provide immediate feedback
+	o.Printf("Fetching balance...")
+
 	go func() {
 		// create a context with timeout
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
