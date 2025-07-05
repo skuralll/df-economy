@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "deepwiki": {
+      "type": "stdio",
+      "command": "https://mcp.deepwiki.com/sse",
+      "args": [],
+      "env": {}
+    }
+  }
+}
