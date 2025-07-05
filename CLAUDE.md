@@ -38,3 +38,6 @@ When detailed Dragonfly information is needed, use the DeepwikiMCP server:
 - **Command System**: Ask "How does the command system work?" for detailed specifications
 - **Entity System**: Ask "How do entities work?" for implementation details
 - **World Management**: Ask "How does world management work?" for world-related specifications
+
+## Memories
+- to memorize
