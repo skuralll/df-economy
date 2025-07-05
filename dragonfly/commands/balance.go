@@ -28,7 +28,7 @@ func (e EconomyBalanceCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) 
 	}
 
 	go func() {
-		// タイムアウト付きでDB処理
+		// create a context with timeout
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
@@ -61,7 +61,7 @@ func (e EconomyBalanceCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) 
 			}
 			return
 		}
-		// 結果を直接送信
+		// send message
 		p.Message(fmt.Sprintf("§a[Balance] %s: %.2f", tn, amount))
 	}()
 }
