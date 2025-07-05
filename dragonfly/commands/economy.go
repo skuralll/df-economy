@@ -35,6 +35,7 @@ func (e EconomyBalanceCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) 
 	p, ok := src.(*player.Player)
 	if !ok {
 		o.Error("Execute as a player")
+		return
 	}
 	// get target uuid
 	tn := e.Username.LoadOr(p.Name())
