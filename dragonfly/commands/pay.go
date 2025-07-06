@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/df-mc/dragonfly/server/cmd"
-	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/world"
 
 	dfErrors "github.com/skuralll/dfeconomy/errors"
@@ -24,9 +23,8 @@ type EconomyPayCommand struct {
 }
 
 func (e EconomyPayCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
-	p, ok := src.(*player.Player)
+	p, ok := e.ValidatePlayerSource(src, o)
 	if !ok {
-		o.Error("Execute as a player")
 		return
 	}
 
