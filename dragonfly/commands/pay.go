@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"time"
 
 	"github.com/df-mc/dragonfly/server/cmd"
 	"github.com/df-mc/dragonfly/server/world"
@@ -33,7 +32,7 @@ func (e EconomyPayCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 
 	go func() {
 		// create a context with timeout
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		ctx, cancel := e.CreateContextWithTimeout()
 		defer cancel()
 		// get target uuid
 		tuid, err := e.svc.GetUUIDByName(ctx, e.Username)

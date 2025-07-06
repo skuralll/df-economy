@@ -1,9 +1,16 @@
 package commands
 
 import (
+	"context"
+	"time"
+
 	"github.com/df-mc/dragonfly/server/cmd"
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/skuralll/dfeconomy/economy/service"
+)
+
+const (
+	DefaultCommandTimeout = 5 * time.Second
 )
 
 type BaseCommand struct {
@@ -18,4 +25,9 @@ func (b *BaseCommand) ValidatePlayerSource(src cmd.Source, o *cmd.Output) (*play
 		o.Error("Execute as a player")
 	}
 	return p, ok
+}
+
+// Create Context with Timeout creates a context with a 5-second timeout.
+func (b *BaseCommand) CreateContextWithTimeout() (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.Background(), DefaultCommandTimeout)
 }

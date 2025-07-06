@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/df-mc/dragonfly/server/cmd"
 	"github.com/df-mc/dragonfly/server/world"
@@ -33,7 +32,7 @@ func (e EconomyTopCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 
 	go func() {
 		// create a context with timeout
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		ctx, cancel := e.CreateContextWithTimeout()
 		defer cancel()
 		// get top entries
 		entries, err := e.svc.GetTopBalances(ctx, e.Page, itemCount)
