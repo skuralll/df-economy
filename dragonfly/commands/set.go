@@ -2,11 +2,13 @@ package commands
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"time"
 
 	"github.com/df-mc/dragonfly/server/cmd"
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/world"
-	"github.com/google/uuid"
 )
 
 // /economy set <target> <amount>
@@ -29,25 +31,36 @@ func (e EconomySetCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 		o.Error("Amount must be at least 0")
 		return
 	}
-	// get target uuid
-	var uid uuid.UUID
-	if e.Username == p.Name() {
-		uid = p.UUID()
-	} else {
-		var err error
-		uid, err = e.svc.GetUUIDByName(context.Background(), e.Username)
+
+	// Provide immediate feedback
+	o.Printf("Processing balance update...")
+
+	go func() {
+		// create a context with timeout
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		// get target uuid
+		tuid, err := e.svc.GetUUIDByName(ctx, e.Username)
 		if err != nil {
-			o.Error("Player not found: " + e.Username)
+			if errors.Is(err, context.DeadlineExceeded) {
+				p.Message("§c[Error] Request timeout")
+			} else {
+				p.Message("§c[Error] Player not found: " + e.Username)
+			}
 			return
 		}
-	}
-	// set balance
-	err := e.svc.SetBalance(context.Background(), uid, e.Username, float64(e.Amount))
-	if err != nil {
-		o.Error("Failed to set balance: " + err.Error())
-		return
-	}
-	o.Printf("Set balance of %s to %.2f", e.Username, e.Amount)
+		err = e.svc.SetBalance(ctx, tuid, e.Username, float64(e.Amount))
+		if err != nil {
+			if errors.Is(err, context.DeadlineExceeded) {
+				p.Message("§c[Error] Request timeout")
+			} else {
+				p.Message("§c[Error] Failed to set balance: " + err.Error())
+			}
+			return
+		}
+		// success
+		p.Message(fmt.Sprintf("§a[Success] Set balance of %s to %.2f", e.Username, e.Amount))
+	}()
 }
 
 // Validation
