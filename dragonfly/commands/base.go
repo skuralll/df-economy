@@ -2,10 +2,12 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/df-mc/dragonfly/server/cmd"
 	"github.com/df-mc/dragonfly/server/player"
+	"github.com/google/uuid"
 	"github.com/skuralll/dfeconomy/economy/service"
 )
 
@@ -30,4 +32,17 @@ func (b *BaseCommand) ValidatePlayerSource(src cmd.Source, o *cmd.Output) (*play
 // Create Context with Timeout creates a context with a 5-second timeout.
 func (b *BaseCommand) CreateContextWithTimeout() (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), DefaultCommandTimeout)
+}
+
+// GetUUIDByName gets UUID by username with automatic error messaging
+func (b *BaseCommand) GetUUIDByName(ctx context.Context, p *player.Player, username string) (uuid.UUID, error) {
+	tuid, err := b.svc.GetUUIDByName(ctx, username)
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			p.Message("§c[Error] Request timeout")
+		} else {
+			p.Message("§c[Error] Player not found: " + username)
+		}
+	}
+	return tuid, err
 }

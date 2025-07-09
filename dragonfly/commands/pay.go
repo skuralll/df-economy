@@ -35,15 +35,11 @@ func (e EconomyPayCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 		ctx, cancel := e.CreateContextWithTimeout()
 		defer cancel()
 		// get target uuid
-		tuid, err := e.svc.GetUUIDByName(ctx, e.Username)
+		tuid, err := e.GetUUIDByName(ctx, p, e.Username)
 		if err != nil {
-			if errors.Is(err, context.DeadlineExceeded) {
-				p.Message("§c[Error] Request timeout")
-			} else {
-				p.Message("§c[Error] Player not found: " + e.Username)
-			}
 			return
 		}
+		// transfer balance
 		err = e.svc.TransferBalance(ctx, p.UUID(), tuid, e.Amount)
 		if err != nil {
 			switch {

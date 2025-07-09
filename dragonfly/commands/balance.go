@@ -40,13 +40,8 @@ func (e EconomyBalanceCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) 
 		} else {
 			// get uuid by name
 			var err error
-			uid, err = e.svc.GetUUIDByName(ctx, tn)
+			uid, err = e.GetUUIDByName(ctx, p, tn)
 			if err != nil {
-				if errors.Is(err, context.DeadlineExceeded) {
-					p.Message("§c[Error] Request timeout")
-				} else {
-					p.Message("§c[Error] Player not found: " + tn)
-				}
 				return
 			}
 		}
