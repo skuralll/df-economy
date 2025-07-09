@@ -30,10 +30,7 @@ func (e EconomyTopCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 	// Provide immediate feedback
 	o.Printf("Loading top balances...")
 
-	go func() {
-		// create a context with timeout
-		ctx, cancel := e.CreateContextWithTimeout()
-		defer cancel()
+	e.ExecuteAsync(p, func(ctx context.Context) {
 		// get top entries
 		entries, err := e.svc.GetTopBalances(ctx, e.Page, itemCount)
 		if err != nil {
@@ -54,7 +51,7 @@ func (e EconomyTopCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 		for i, entry := range entries {
 			p.Message(fmt.Sprintf("#%d %s: %.2f", (e.Page-1)*itemCount+i+1, entry.Name, entry.Money))
 		}
-	}()
+	})
 }
 
 // Validation

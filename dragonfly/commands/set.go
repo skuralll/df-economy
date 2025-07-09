@@ -32,10 +32,7 @@ func (e EconomySetCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 	// Provide immediate feedback
 	o.Printf("Processing balance update...")
 
-	go func() {
-		// create a context with timeout
-		ctx, cancel := e.CreateContextWithTimeout()
-		defer cancel()
+	e.ExecuteAsync(p, func(ctx context.Context) {
 		// get target uuid
 		tuid, err := e.GetUUIDByName(ctx, p, e.Username)
 		if err != nil {
@@ -53,7 +50,7 @@ func (e EconomySetCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 		}
 		// success
 		p.Message(fmt.Sprintf("§a[Success] Set balance of %s to %.2f", e.Username, e.Amount))
-	}()
+	})
 }
 
 // Validation

@@ -27,11 +27,7 @@ func (e EconomyBalanceCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) 
 	// Provide immediate feedback
 	o.Printf("Fetching balance...")
 
-	go func() {
-		// create a context with timeout
-		ctx, cancel := e.CreateContextWithTimeout()
-		defer cancel()
-
+	e.ExecuteAsync(p, func(ctx context.Context) {
 		// get target uuid
 		tn := e.Username.LoadOr(p.Name())
 		var uid uuid.UUID
@@ -58,7 +54,7 @@ func (e EconomyBalanceCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) 
 		}
 		// send message
 		p.Message(fmt.Sprintf("§a[Balance] %s: %.2f", tn, amount))
-	}()
+	})
 }
 
 // Validation

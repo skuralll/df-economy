@@ -46,3 +46,12 @@ func (b *BaseCommand) GetUUIDByName(ctx context.Context, p *player.Player, usern
 	}
 	return tuid, err
 }
+
+// ExecuteAsync executes a function asynchronously with a context.
+func (b *BaseCommand) ExecuteAsync(p *player.Player, fn func(ctx context.Context)) {
+	go func() {
+		ctx, cancel := b.CreateContextWithTimeout()
+		defer cancel()
+		fn(ctx)
+	}()
+}
