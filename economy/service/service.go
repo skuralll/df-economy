@@ -36,7 +36,7 @@ func (svc *EconomyService) RegisterUser(ctx context.Context, id uuid.UUID, name 
 		return false, nil
 	}
 	// Register new user
-	err = svc.db.Set(ctx, id, name, svc.cfg.DefaultAmount)
+	err = svc.db.Set(ctx, id, name, svc.cfg.DefaultBalance)
 	if err != nil {
 		return false, err
 	}
