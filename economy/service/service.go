@@ -5,22 +5,24 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
+	"github.com/skuralll/dfeconomy/economy/config"
 	"github.com/skuralll/dfeconomy/errors"
 	"github.com/skuralll/dfeconomy/internal/db"
 	"github.com/skuralll/dfeconomy/models"
 )
 
 type EconomyService struct {
-	db db.DB
+	db  db.DB
+	cfg config.Config
 }
 
 // Get new EconomyService instance
-func NewEconomyService() (*EconomyService, func(), error) {
-	dbInstance, cleanup, err := db.NewSQLiteFromConfig(&db.SQLiteConfig{Path: "./foo.db"}) // TODO: Support multiple databases
+func NewEconomyService(cfg config.Config) (*EconomyService, func(), error) {
+	dbInstance, cleanup, err := db.NewSQLiteFromConfig(&db.SQLiteConfig{Path: cfg.DBPath}) // TODO: Support multiple databases
 	if err != nil {
 		return nil, nil, err
 	}
-	return &EconomyService{dbInstance}, cleanup, nil
+	return &EconomyService{dbInstance, cfg}, cleanup, nil
 }
 
 // TODO: Move validation logic in db to the service. The db should only operate the database based on the received values.
@@ -33,8 +35,8 @@ func (svc *EconomyService) RegisterUser(ctx context.Context, id uuid.UUID, name 
 		// User already exists
 		return false, nil
 	}
-	// Register new user with 0 balance
-	err = svc.db.Set(ctx, id, name, 0)
+	// Register new user
+	err = svc.db.Set(ctx, id, name, svc.cfg.DefaultBalance)
 	if err != nil {
 		return false, err
 	}
