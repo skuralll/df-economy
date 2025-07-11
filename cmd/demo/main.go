@@ -10,6 +10,7 @@ import (
 	"github.com/df-mc/dragonfly/server/player/chat"
 	"github.com/pelletier/go-toml"
 	"github.com/skuralll/dfeconomy/dragonfly/commands"
+	"github.com/skuralll/dfeconomy/economy/config"
 	"github.com/skuralll/dfeconomy/economy/service"
 )
 
@@ -24,7 +25,7 @@ func main() {
 	srv := conf.New()
 	srv.CloseOnProgramEnd()
 
-	svc, cleanup, err := service.NewEconomyService()
+	svc, cleanup, err := service.NewEconomyService(config.Config{})
 	if err != nil {
 		slog.Error("Failed to create economy service", "error", err)
 		os.Exit(1)
