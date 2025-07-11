@@ -12,7 +12,8 @@ import (
 )
 
 type EconomyService struct {
-	db db.DB
+	db  db.DB
+	cfg config.Config
 }
 
 // Get new EconomyService instance
@@ -21,7 +22,7 @@ func NewEconomyService(cfg config.Config) (*EconomyService, func(), error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	return &EconomyService{dbInstance}, cleanup, nil
+	return &EconomyService{dbInstance, cfg}, cleanup, nil
 }
 
 // TODO: Move validation logic in db to the service. The db should only operate the database based on the received values.
