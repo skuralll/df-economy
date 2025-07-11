@@ -35,8 +35,8 @@ func (svc *EconomyService) RegisterUser(ctx context.Context, id uuid.UUID, name 
 		// User already exists
 		return false, nil
 	}
-	// Register new user with 0 balance
-	err = svc.db.Set(ctx, id, name, 0)
+	// Register new user
+	err = svc.db.Set(ctx, id, name, svc.cfg.DefaultAmount)
 	if err != nil {
 		return false, err
 	}
