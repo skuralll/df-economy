@@ -25,7 +25,7 @@ func main() {
 	srv := conf.New()
 	srv.CloseOnProgramEnd()
 
-	svc, cleanup, err := service.NewEconomyService(config.Config{})
+	svc, cleanup, err := service.NewEconomyService(config.Config{DBPath: "./economy.db"})
 	if err != nil {
 		slog.Error("Failed to create economy service", "error", err)
 		os.Exit(1)
