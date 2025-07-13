@@ -9,6 +9,7 @@ import (
 	ecerrors "github.com/skuralll/dfeconomy/errors"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	_ "modernc.org/sqlite"
 )
 
@@ -17,7 +18,10 @@ type DBGorm struct {
 }
 
 func NewDBGorm() (*DBGorm, func(), error) {
-	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Dialector{
+		DriverName: "sqlite",
+		DSN:        "test.db",
+	}, &gorm.Config{})
 	if err != nil {
 		slog.Error("failed to open database", "error", err)
 		return nil, nil, err
@@ -86,18 +90,18 @@ func (d *DBGorm) GetUUIDByName(ctx context.Context, name string) (uuid.UUID, err
 }
 
 func (d *DBGorm) Set(ctx context.Context, id uuid.UUID, name string, balance float64) error {
-	result := d.db.Model(&Account{}).Where("uuid = ?", id).Updates(map[string]interface{}{
-		"balance": balance,
-		"name":    name,
+	result := d.db.WithContext(ctx).Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "uuid"}},
+		DoUpdates: clause.AssignmentColumns([]string{"balance", "name"}),
+	}).Create(&Account{
+		UUID:    id.String(),
+		Name:    name,
+		Balance: balance,
 	})
 
 	if result.Error != nil {
 		slog.Error("failed to set balance", "uuid", id, "name", name, "error", result.Error)
 		return result.Error
-	}
-
-	if result.RowsAffected == 0 {
-		return ecerrors.ErrUnknownPlayer
 	}
 
 	return nil
