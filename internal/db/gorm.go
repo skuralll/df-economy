@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 
 	"github.com/google/uuid"
@@ -65,13 +66,16 @@ func migrateSchema(db *gorm.DB) error {
 }
 
 func (d *DBGorm) Balance(ctx context.Context, id uuid.UUID) (float64, error) {
-	var balance float64
-	err := d.db.WithContext(ctx).Model(&Account{}).Select("balance").Where("uuid = ?", id).Scan(&balance).Error
+	var account Account
+	err := d.db.WithContext(ctx).Where("uuid = ?", id).First(&account).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return 0, ecerrors.ErrUnknownPlayer
+		}
 		slog.Error("failed to get balance", "uuid", id, "error", err)
 		return 0, err
 	}
-	return balance, nil
+	return account.Balance, nil
 }
 
 func (d *DBGorm) GetUUIDByName(ctx context.Context, name string) (uuid.UUID, error) {
