@@ -88,12 +88,6 @@ func (d *DBGorm) GetUUIDByName(ctx context.Context, name string) (uuid.UUID, err
 
 // Set implements DB.
 func (d *DBGorm) Set(ctx context.Context, id uuid.UUID, name string, balance float64) error {
-	// _, err := s.db.ExecContext(ctx, `
-	// 	INSERT INTO balances (uuid, name ,money) VALUES (?,?,?)
-	// 	ON CONFLICT (uuid) DO UPDATE
-	// 		SET money = excluded.money,
-	// 				name = COALESCE(excluded.name, balances.name)
-	// `, id.String(), name, amount)
 	result := d.db.Model(&Account{}).Where("uuid = ?", id).Updates(map[string]interface{}{
 		"balance": balance,
 		"name":    name,
