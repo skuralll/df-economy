@@ -59,14 +59,30 @@ func migrateSchema(db *gorm.DB) error {
 	return nil
 }
 
-// Balance implements DB.
 func (d *DBGorm) Balance(ctx context.Context, id uuid.UUID) (float64, error) {
-	panic("unimplemented")
+	var balance float64
+	err := d.db.Model(&Account{}).Select("balance").Where("uuid = ?", id).Scan(&balance).Error
+	if err != nil {
+		slog.Error("failed to get balance", "uuid", id, "error", err)
+		return 0, err
+	}
+	return balance, nil
 }
 
 // GetUUIDByName implements DB.
 func (d *DBGorm) GetUUIDByName(ctx context.Context, name string) (uuid.UUID, error) {
-	panic("unimplemented")
+	var uStr string
+	err := d.db.Model(&Account{}).Select("uuid").Where("name = ?", name).Scan(&uStr).Error
+	if err != nil {
+		slog.Error("failed to get uuid by name", "name", name, "error", err)
+		return uuid.Nil, err
+	}
+	// convert string to uuid
+	uId, err := uuid.Parse(uStr)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	return uId, nil
 }
 
 // Set implements DB.
