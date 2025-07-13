@@ -107,7 +107,31 @@ func (d *DBGorm) Set(ctx context.Context, id uuid.UUID, name string, balance flo
 
 // Top implements DB.
 func (d *DBGorm) Top(ctx context.Context, page int, size int) ([]models.EconomyEntry, error) {
-	panic("unimplemented")
+	offset := (page - 1) * size
+
+	// Fetch top accounts from the database
+	var accounts []Account
+	err := d.db.Model(&Account{}).Limit(size).Offset(offset).Order("balance DESC").Find(&accounts).Error
+	if err != nil {
+		slog.Error("failed to fetch top accounts", "page", page, "size", size, "error", err)
+		return nil, err
+	}
+
+	// Convert accounts to EconomyEntry
+	var entries []models.EconomyEntry
+	for _, account := range accounts {
+		u, err := uuid.Parse(string(account.UUID))
+		if err != nil {
+			slog.Error("failed to parse uuid", "uuid", account.UUID, "error", err)
+			continue // skip broken uuid
+		}
+		entries = append(entries, models.EconomyEntry{
+			UUID:  u,
+			Name:  account.Name,
+			Money: account.Balance,
+		})
+	}
+	return entries, nil
 }
 
 // Transfer implements DB.
