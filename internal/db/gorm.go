@@ -11,6 +11,7 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"gorm.io/gorm/logger"
 	_ "modernc.org/sqlite"
 )
 
@@ -22,7 +23,9 @@ func NewDBGorm() (*DBGorm, func(), error) {
 	db, err := gorm.Open(sqlite.Dialector{
 		DriverName: "sqlite",
 		DSN:        "test.db",
-	}, &gorm.Config{})
+	}, &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent),
+	})
 	if err != nil {
 		slog.Error("failed to open database", "error", err)
 		return nil, nil, err
