@@ -5,8 +5,8 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
-	ecerrors "github.com/skuralll/dfeconomy/errors"
 	"github.com/skuralll/dfeconomy/economy"
+	ecerrors "github.com/skuralll/dfeconomy/errors"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	_ "modernc.org/sqlite"
@@ -70,7 +70,6 @@ func (d *DBGorm) Balance(ctx context.Context, id uuid.UUID) (float64, error) {
 	return balance, nil
 }
 
-// GetUUIDByName implements DB.
 func (d *DBGorm) GetUUIDByName(ctx context.Context, name string) (uuid.UUID, error) {
 	var uStr string
 	err := d.db.Model(&Account{}).Select("uuid").Where("name = ?", name).Scan(&uStr).Error
@@ -86,7 +85,6 @@ func (d *DBGorm) GetUUIDByName(ctx context.Context, name string) (uuid.UUID, err
 	return uId, nil
 }
 
-// Set implements DB.
 func (d *DBGorm) Set(ctx context.Context, id uuid.UUID, name string, balance float64) error {
 	result := d.db.Model(&Account{}).Where("uuid = ?", id).Updates(map[string]interface{}{
 		"balance": balance,
@@ -105,7 +103,6 @@ func (d *DBGorm) Set(ctx context.Context, id uuid.UUID, name string, balance flo
 	return nil
 }
 
-// Top implements DB.
 func (d *DBGorm) Top(ctx context.Context, page int, size int) ([]economy.EconomyEntry, error) {
 	offset := (page - 1) * size
 
@@ -134,8 +131,7 @@ func (d *DBGorm) Top(ctx context.Context, page int, size int) ([]economy.Economy
 	return entries, nil
 }
 
-// Transfer implements DB.
-func (d *DBGorm) Transfer(ctx context.Context, fromID uuid.UUID, toID uuid.UUID, amount float64) error {
+func (d *DBGorm) Transfer(ctx context.Context, fromID uuid.UUID, toID uuid.UUID, balance float64) error {
 	panic("unimplemented")
 }
 
