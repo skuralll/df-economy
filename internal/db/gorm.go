@@ -75,7 +75,6 @@ func (d *DBGorm) Balance(ctx context.Context, id uuid.UUID) (float64, error) {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return 0, ecerrors.ErrUnknownPlayer
 		}
-		slog.Error("failed to get balance", "uuid", id, "error", err)
 		return 0, err
 	}
 	return account.Balance, nil
@@ -85,7 +84,6 @@ func (d *DBGorm) GetUUIDByName(ctx context.Context, name string) (uuid.UUID, err
 	var uStr string
 	err := d.db.WithContext(ctx).Model(&Account{}).Select("uuid").Where("name = ?", name).Scan(&uStr).Error
 	if err != nil {
-		slog.Error("failed to get uuid by name", "name", name, "error", err)
 		return uuid.Nil, err
 	}
 	// convert string to uuid
@@ -107,7 +105,6 @@ func (d *DBGorm) Set(ctx context.Context, id uuid.UUID, name string, balance flo
 	})
 
 	if result.Error != nil {
-		slog.Error("failed to set balance", "uuid", id, "name", name, "error", result.Error)
 		return result.Error
 	}
 
@@ -121,7 +118,6 @@ func (d *DBGorm) Top(ctx context.Context, page int, size int) ([]economy.Economy
 	var accounts []Account
 	err := d.db.WithContext(ctx).Model(&Account{}).Limit(size).Offset(offset).Order("balance DESC").Find(&accounts).Error
 	if err != nil {
-		slog.Error("failed to fetch top accounts", "page", page, "size", size, "error", err)
 		return nil, err
 	}
 
@@ -130,7 +126,6 @@ func (d *DBGorm) Top(ctx context.Context, page int, size int) ([]economy.Economy
 	for _, account := range accounts {
 		u, err := uuid.Parse(string(account.UUID))
 		if err != nil {
-			slog.Error("failed to parse uuid", "uuid", account.UUID, "error", err)
 			continue // skip broken uuid
 		}
 		entries = append(entries, economy.EconomyEntry{
@@ -148,7 +143,6 @@ func (d *DBGorm) Transfer(ctx context.Context, fromID uuid.UUID, toID uuid.UUID,
 		var fromAccount Account
 		err := tx.Where("uuid = ?", fromID).First(&fromAccount).Error
 		if err != nil {
-			slog.Error("sender not found", "uuid", fromID, "error", err)
 			return ecerrors.ErrUnknownPlayer
 		}
 		if fromAccount.Balance < amount {
@@ -157,19 +151,16 @@ func (d *DBGorm) Transfer(ctx context.Context, fromID uuid.UUID, toID uuid.UUID,
 		// Check receiver exists
 		err = tx.Model(&Account{}).Where("uuid = ?", toID).First(&Account{}).Error
 		if err != nil {
-			slog.Error("receiver not found", "uuid", toID, "error", err)
 			return ecerrors.ErrUnknownPlayer
 		}
 		// Deduct from sender
 		result := tx.Model(&Account{}).Where("uuid = ?", fromID).Update("balance", gorm.Expr("balance - ?", amount))
 		if result.Error != nil {
-			slog.Error("failed to deduct from sender", "uuid", fromID, "amount", amount, "error", result.Error)
 			return result.Error
 		}
 		// Add to receiver
 		result = tx.Model(&Account{}).Where("uuid = ?", toID).Update("balance", gorm.Expr("balance + ?", amount))
 		if result.Error != nil {
-			slog.Error("failed to add to receiver", "uuid", toID, "amount", amount, "error", result.Error)
 			return result.Error
 		}
 		// Return nil to indicate success
