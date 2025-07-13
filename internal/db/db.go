@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/skuralll/dfeconomy/models"
+	"github.com/skuralll/dfeconomy/economy"
 )
 
 type DB interface {
@@ -15,7 +15,7 @@ type DB interface {
 	// Transfer Balance
 	Transfer(ctx context.Context, fromID, toID uuid.UUID, amount float64) error
 	// Get balance ranking
-	Top(ctx context.Context, page, size int) ([]models.EconomyEntry, error)
+	Top(ctx context.Context, page, size int) ([]economy.EconomyEntry, error)
 	// Get uuid by name
 	GetUUIDByName(ctx context.Context, name string) (uuid.UUID, error)
 }

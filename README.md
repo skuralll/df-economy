@@ -77,7 +77,7 @@ Database file (`foo.db`) will be created automatically. Player balance data is s
 
 ## 日本語ドキュメント
 
-日本語のドキュメントは[こちら](docs/README.md)をご覧ください。
+日本語のドキュメントは[こちら](README_JP.md)をご覧ください。
 
 ## License
 
