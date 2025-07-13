@@ -1,8 +1,11 @@
 package db
 
 import (
+	"context"
 	"log/slog"
 
+	"github.com/google/uuid"
+	"github.com/skuralll/dfeconomy/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	_ "modernc.org/sqlite"
@@ -55,3 +58,31 @@ func migrateSchema(db *gorm.DB) error {
 	}
 	return nil
 }
+
+// Balance implements DB.
+func (d *DBGorm) Balance(ctx context.Context, id uuid.UUID) (float64, error) {
+	panic("unimplemented")
+}
+
+// GetUUIDByName implements DB.
+func (d *DBGorm) GetUUIDByName(ctx context.Context, name string) (uuid.UUID, error) {
+	panic("unimplemented")
+}
+
+// Set implements DB.
+func (d *DBGorm) Set(ctx context.Context, id uuid.UUID, name string, amount float64) error {
+	panic("unimplemented")
+}
+
+// Top implements DB.
+func (d *DBGorm) Top(ctx context.Context, page int, size int) ([]models.EconomyEntry, error) {
+	panic("unimplemented")
+}
+
+// Transfer implements DB.
+func (d *DBGorm) Transfer(ctx context.Context, fromID uuid.UUID, toID uuid.UUID, amount float64) error {
+	panic("unimplemented")
+}
+
+// Implementation completeness checks
+var _ DB = (*DBGorm)(nil)
