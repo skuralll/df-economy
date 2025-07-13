@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	ecerrors "github.com/skuralll/dfeconomy/errors"
-	"github.com/skuralll/dfeconomy/models"
+	"github.com/skuralll/dfeconomy/economy"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	_ "modernc.org/sqlite"
@@ -106,7 +106,7 @@ func (d *DBGorm) Set(ctx context.Context, id uuid.UUID, name string, balance flo
 }
 
 // Top implements DB.
-func (d *DBGorm) Top(ctx context.Context, page int, size int) ([]models.EconomyEntry, error) {
+func (d *DBGorm) Top(ctx context.Context, page int, size int) ([]economy.EconomyEntry, error) {
 	offset := (page - 1) * size
 
 	// Fetch top accounts from the database
@@ -118,14 +118,14 @@ func (d *DBGorm) Top(ctx context.Context, page int, size int) ([]models.EconomyE
 	}
 
 	// Convert accounts to EconomyEntry
-	var entries []models.EconomyEntry
+	var entries []economy.EconomyEntry
 	for _, account := range accounts {
 		u, err := uuid.Parse(string(account.UUID))
 		if err != nil {
 			slog.Error("failed to parse uuid", "uuid", account.UUID, "error", err)
 			continue // skip broken uuid
 		}
-		entries = append(entries, models.EconomyEntry{
+		entries = append(entries, economy.EconomyEntry{
 			UUID:  u,
 			Name:  account.Name,
 			Money: account.Balance,

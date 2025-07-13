@@ -8,7 +8,7 @@ import (
 	"github.com/skuralll/dfeconomy/economy/config"
 	"github.com/skuralll/dfeconomy/errors"
 	"github.com/skuralll/dfeconomy/internal/db"
-	"github.com/skuralll/dfeconomy/models"
+	"github.com/skuralll/dfeconomy/economy"
 )
 
 type EconomyService struct {
@@ -72,7 +72,7 @@ func (svc *EconomyService) TransferBalance(ctx context.Context, fromID, toID uui
 }
 
 // Get balance ranking
-func (svc *EconomyService) GetTopBalances(ctx context.Context, page, size int) ([]models.EconomyEntry, error) {
+func (svc *EconomyService) GetTopBalances(ctx context.Context, page, size int) ([]economy.EconomyEntry, error) {
 	// validation
 	if size <= 0 {
 		return nil, errors.ErrValueMustBeAtLeastOne

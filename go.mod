@@ -8,6 +8,8 @@ require (
 	github.com/df-mc/dragonfly v0.10.5
 	github.com/google/uuid v1.6.0
 	github.com/pelletier/go-toml v1.9.5
+	gorm.io/driver/sqlite v1.6.0
+	gorm.io/gorm v1.30.0
 	modernc.org/sqlite v1.38.0
 )
 
@@ -37,8 +39,6 @@ require (
 	golang.org/x/oauth2 v0.25.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/text v0.27.0 // indirect
-	gorm.io/driver/sqlite v1.6.0 // indirect
-	gorm.io/gorm v1.30.0 // indirect
 	modernc.org/libc v1.65.10 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect

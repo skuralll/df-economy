@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	ecerrors "github.com/skuralll/dfeconomy/errors"
-	"github.com/skuralll/dfeconomy/models"
+	"github.com/skuralll/dfeconomy/economy"
 	_ "modernc.org/sqlite"
 )
 
@@ -163,7 +163,7 @@ func (s *DBSQLite) Transfer(ctx context.Context, fromID uuid.UUID, toID uuid.UUI
 func (s *DBSQLite) Top(
 	ctx context.Context,
 	page, size int, // page 1-based, size > 0
-) ([]models.EconomyEntry, error) {
+) ([]economy.EconomyEntry, error) {
 	offset := (page - 1) * size
 
 	rows, err := s.db.QueryContext(ctx, `
@@ -177,7 +177,7 @@ func (s *DBSQLite) Top(
 	}
 	defer rows.Close()
 
-	var list []models.EconomyEntry
+	var list []economy.EconomyEntry
 	for rows.Next() {
 		var (
 			uStr  string
@@ -191,7 +191,7 @@ func (s *DBSQLite) Top(
 		if err != nil { // skip broken uuid
 			continue
 		}
-		list = append(list, models.EconomyEntry{
+		list = append(list, economy.EconomyEntry{
 			UUID:  u,
 			Name:  name.String,
 			Money: money,
