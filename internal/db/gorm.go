@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
+	ecerrors "github.com/skuralll/dfeconomy/errors"
 	"github.com/skuralll/dfeconomy/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -86,8 +87,28 @@ func (d *DBGorm) GetUUIDByName(ctx context.Context, name string) (uuid.UUID, err
 }
 
 // Set implements DB.
-func (d *DBGorm) Set(ctx context.Context, id uuid.UUID, name string, amount float64) error {
-	panic("unimplemented")
+func (d *DBGorm) Set(ctx context.Context, id uuid.UUID, name string, balance float64) error {
+	// _, err := s.db.ExecContext(ctx, `
+	// 	INSERT INTO balances (uuid, name ,money) VALUES (?,?,?)
+	// 	ON CONFLICT (uuid) DO UPDATE
+	// 		SET money = excluded.money,
+	// 				name = COALESCE(excluded.name, balances.name)
+	// `, id.String(), name, amount)
+	result := d.db.Model(&Account{}).Where("uuid = ?", id).Updates(map[string]interface{}{
+		"balance": balance,
+		"name":    name,
+	})
+
+	if result.Error != nil {
+		slog.Error("failed to set balance", "uuid", id, "name", name, "error", result.Error)
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return ecerrors.ErrUnknownPlayer
+	}
+
+	return nil
 }
 
 // Top implements DB.
