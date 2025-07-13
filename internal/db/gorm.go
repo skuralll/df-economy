@@ -39,5 +39,19 @@ func NewDBGorm() (*DBGorm, func(), error) {
 		}
 	}
 
+	// Migrate the schema
+	if err := migrateSchema(db); err != nil {
+		return nil, nil, err
+	}
+
 	return &DBGorm{db}, cleanup, nil
+}
+
+// MigrateSchema migrates the database schema for the Account model.
+func migrateSchema(db *gorm.DB) error {
+	if err := db.AutoMigrate(&Account{}); err != nil {
+		slog.Error("failed to migrate schema", "error", err)
+		return err
+	}
+	return nil
 }
