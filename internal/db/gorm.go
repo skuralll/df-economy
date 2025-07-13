@@ -131,8 +131,39 @@ func (d *DBGorm) Top(ctx context.Context, page int, size int) ([]economy.Economy
 	return entries, nil
 }
 
-func (d *DBGorm) Transfer(ctx context.Context, fromID uuid.UUID, toID uuid.UUID, balance float64) error {
-	panic("unimplemented")
+func (d *DBGorm) Transfer(ctx context.Context, fromID uuid.UUID, toID uuid.UUID, amount float64) error {
+	return d.db.Transaction(func(tx *gorm.DB) error {
+		// Check sender exists and get balance
+		var fromAccount Account
+		err := tx.Where("uuid = ?", fromID).First(&fromAccount).Error
+		if err != nil {
+			slog.Error("sender not found", "uuid", fromID, "error", err)
+			return ecerrors.ErrUnknownPlayer
+		}
+		if fromAccount.Balance < amount {
+			return ecerrors.ErrInsufficientFunds
+		}
+		// Check receiver exists
+		err = tx.Model(&Account{}).Where("uuid = ?", toID).First(&Account{}).Error
+		if err != nil {
+			slog.Error("receiver not found", "uuid", toID, "error", err)
+			return ecerrors.ErrUnknownPlayer
+		}
+		// Deduct from sender
+		result := tx.Model(&Account{}).Where("uuid = ?", fromID).Update("balance", gorm.Expr("balance - ?", amount))
+		if result.Error != nil {
+			slog.Error("failed to deduct from sender", "uuid", fromID, "amount", amount, "error", result.Error)
+			return result.Error
+		}
+		// Add to receiver
+		result = tx.Model(&Account{}).Where("uuid = ?", toID).Update("balance", gorm.Expr("balance + ?", amount))
+		if result.Error != nil {
+			slog.Error("failed to add to receiver", "uuid", toID, "amount", amount, "error", result.Error)
+			return result.Error
+		}
+		// Return nil to indicate success
+		return nil
+	})
 }
 
 // Implementation completeness checks
