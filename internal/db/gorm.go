@@ -66,7 +66,7 @@ func migrateSchema(db *gorm.DB) error {
 
 func (d *DBGorm) Balance(ctx context.Context, id uuid.UUID) (float64, error) {
 	var balance float64
-	err := d.db.Model(&Account{}).Select("balance").Where("uuid = ?", id).Scan(&balance).Error
+	err := d.db.WithContext(ctx).Model(&Account{}).Select("balance").Where("uuid = ?", id).Scan(&balance).Error
 	if err != nil {
 		slog.Error("failed to get balance", "uuid", id, "error", err)
 		return 0, err
@@ -76,7 +76,7 @@ func (d *DBGorm) Balance(ctx context.Context, id uuid.UUID) (float64, error) {
 
 func (d *DBGorm) GetUUIDByName(ctx context.Context, name string) (uuid.UUID, error) {
 	var uStr string
-	err := d.db.Model(&Account{}).Select("uuid").Where("name = ?", name).Scan(&uStr).Error
+	err := d.db.WithContext(ctx).Model(&Account{}).Select("uuid").Where("name = ?", name).Scan(&uStr).Error
 	if err != nil {
 		slog.Error("failed to get uuid by name", "name", name, "error", err)
 		return uuid.Nil, err
@@ -112,7 +112,7 @@ func (d *DBGorm) Top(ctx context.Context, page int, size int) ([]economy.Economy
 
 	// Fetch top accounts from the database
 	var accounts []Account
-	err := d.db.Model(&Account{}).Limit(size).Offset(offset).Order("balance DESC").Find(&accounts).Error
+	err := d.db.WithContext(ctx).Model(&Account{}).Limit(size).Offset(offset).Order("balance DESC").Find(&accounts).Error
 	if err != nil {
 		slog.Error("failed to fetch top accounts", "page", page, "size", size, "error", err)
 		return nil, err
