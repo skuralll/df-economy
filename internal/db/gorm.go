@@ -129,9 +129,9 @@ func (d *DBGorm) Top(ctx context.Context, page int, size int) ([]economy.Economy
 			continue // skip broken uuid
 		}
 		entries = append(entries, economy.EconomyEntry{
-			UUID:  u,
-			Name:  account.Name,
-			Money: account.Balance,
+			UUID:    u,
+			Name:    account.Name,
+			Balance: account.Balance,
 		})
 	}
 	return entries, nil

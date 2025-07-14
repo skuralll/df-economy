@@ -6,8 +6,8 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
-	ecerrors "github.com/skuralll/dfeconomy/errors"
 	"github.com/skuralll/dfeconomy/economy"
+	ecerrors "github.com/skuralll/dfeconomy/errors"
 	_ "modernc.org/sqlite"
 )
 
@@ -192,9 +192,9 @@ func (s *DBSQLite) Top(
 			continue
 		}
 		list = append(list, economy.EconomyEntry{
-			UUID:  u,
-			Name:  name.String,
-			Money: money,
+			UUID:    u,
+			Name:    name.String,
+			Balance: money,
 		})
 	}
 	if err := rows.Err(); err != nil {
