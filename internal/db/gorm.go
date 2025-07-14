@@ -73,7 +73,7 @@ func migrateSchema(db *gorm.DB) error {
 func (d *DBGorm) Balance(ctx context.Context, id uuid.UUID) (float64, error) {
 	// Basic data integrity checks
 	if id == uuid.Nil {
-		return 0, errors.New("uuid cannot be nil")
+		return 0, NewValidationError("uuid", "cannot be nil")
 	}
 
 	var account Account
@@ -90,7 +90,7 @@ func (d *DBGorm) Balance(ctx context.Context, id uuid.UUID) (float64, error) {
 func (d *DBGorm) GetUUIDByName(ctx context.Context, name string) (uuid.UUID, error) {
 	// Basic data integrity checks
 	if strings.TrimSpace(name) == "" {
-		return uuid.Nil, errors.New("name cannot be empty")
+		return uuid.Nil, NewValidationError("name", "cannot be empty")
 	}
 
 	var uStr string
@@ -109,13 +109,13 @@ func (d *DBGorm) GetUUIDByName(ctx context.Context, name string) (uuid.UUID, err
 func (d *DBGorm) Set(ctx context.Context, id uuid.UUID, name string, balance float64) error {
 	// Basic data integrity checks
 	if id == uuid.Nil {
-		return errors.New("uuid cannot be nil")
+		return NewValidationError("uuid", "cannot be nil")
 	}
 	if strings.TrimSpace(name) == "" {
-		return errors.New("name cannot be empty")
+		return NewValidationError("name", "cannot be empty")
 	}
 	if math.IsNaN(balance) || math.IsInf(balance, 0) {
-		return errors.New("balance must be a valid number")
+		return NewValidationError("balance", "must be a valid number")
 	}
 
 	result := d.db.WithContext(ctx).Clauses(clause.OnConflict{
@@ -137,10 +137,10 @@ func (d *DBGorm) Set(ctx context.Context, id uuid.UUID, name string, balance flo
 func (d *DBGorm) Top(ctx context.Context, page int, size int) ([]economy.EconomyEntry, error) {
 	// Basic data integrity checks
 	if page <= 0 {
-		return nil, errors.New("page must be greater than 0")
+		return nil, NewValidationError("page", "must be greater than 0")
 	}
 	if size <= 0 {
-		return nil, errors.New("size must be greater than 0")
+		return nil, NewValidationError("size", "must be greater than 0")
 	}
 
 	offset := (page - 1) * size
@@ -171,16 +171,16 @@ func (d *DBGorm) Top(ctx context.Context, page int, size int) ([]economy.Economy
 func (d *DBGorm) Transfer(ctx context.Context, fromID uuid.UUID, toID uuid.UUID, amount float64) error {
 	// Basic data integrity checks
 	if fromID == uuid.Nil {
-		return errors.New("from uuid cannot be nil")
+		return NewValidationError("from_uuid", "cannot be nil")
 	}
 	if toID == uuid.Nil {
-		return errors.New("to uuid cannot be nil")
+		return NewValidationError("to_uuid", "cannot be nil")
 	}
 	if math.IsNaN(amount) || math.IsInf(amount, 0) {
-		return errors.New("amount must be a valid number")
+		return NewValidationError("amount", "must be a valid number")
 	}
 	if amount <= 0 {
-		return errors.New("amount must be positive")
+		return NewValidationError("amount", "must be positive")
 	}
 
 	return d.db.Transaction(func(tx *gorm.DB) error {
