@@ -49,7 +49,7 @@ func (e EconomyTopCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 		// success - display results
 		p.Message(fmt.Sprintf("§a[Top Balances - Page %d]", e.Page))
 		for i, entry := range entries {
-			p.Message(fmt.Sprintf("#%d %s: %.2f", (e.Page-1)*itemCount+i+1, entry.Name, entry.Money))
+			p.Message(fmt.Sprintf("#%d %s: %.2f", (e.Page-1)*itemCount+i+1, entry.Name, entry.Balance))
 		}
 	})
 }
