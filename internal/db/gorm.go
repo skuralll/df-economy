@@ -9,7 +9,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/skuralll/dfeconomy/economy"
-	ecerrors "github.com/skuralll/dfeconomy/errors"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -80,7 +79,7 @@ func (d *DBGorm) Balance(ctx context.Context, id uuid.UUID) (float64, error) {
 	err := d.db.WithContext(ctx).Where("uuid = ?", id).First(&account).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return 0, ecerrors.ErrUnknownPlayer
+			return 0, NewNotFoundError("player")
 		}
 		return 0, err
 	}
@@ -188,15 +187,15 @@ func (d *DBGorm) Transfer(ctx context.Context, fromID uuid.UUID, toID uuid.UUID,
 		var fromAccount Account
 		err := tx.Where("uuid = ?", fromID).First(&fromAccount).Error
 		if err != nil {
-			return ecerrors.ErrUnknownPlayer
+			return NewNotFoundError("sender")
 		}
 		if fromAccount.Balance < amount {
-			return ecerrors.ErrInsufficientFunds
+			return NewInsufficientBalanceError(amount, fromAccount.Balance)
 		}
 		// Check receiver exists
 		err = tx.Model(&Account{}).Where("uuid = ?", toID).First(&Account{}).Error
 		if err != nil {
-			return ecerrors.ErrUnknownPlayer
+			return NewNotFoundError("receiver")
 		}
 		// Deduct from sender
 		result := tx.Model(&Account{}).Where("uuid = ?", fromID).Update("balance", gorm.Expr("balance - ?", amount))
