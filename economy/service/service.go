@@ -33,7 +33,7 @@ func (svc *EconomyService) RegisterUser(ctx context.Context, id uuid.UUID, name 
 	_, err := svc.db.Balance(ctx, id)
 	if err == nil {
 		// User already exists
-		return false, nil
+		return false, NewPlayerExistsError(id.String())
 	}
 	// Register new user
 	err = svc.db.Set(ctx, id, name, svc.cfg.DefaultBalance)
