@@ -25,8 +25,6 @@ func NewEconomyService(cfg config.Config) (*EconomyService, func(), error) {
 	return &EconomyService{dbInstance, cfg}, cleanup, nil
 }
 
-// TODO: Move validation logic in db to the service. The db should only operate the database based on the received values.
-
 // Register a new user
 func (svc *EconomyService) RegisterUser(ctx context.Context, id uuid.UUID, name string) (bool, error) {
 	// Check if user already exists
