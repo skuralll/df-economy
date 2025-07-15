@@ -9,7 +9,7 @@ import (
 	"github.com/df-mc/dragonfly/server/cmd"
 	"github.com/df-mc/dragonfly/server/world"
 
-	dfErrors "github.com/skuralll/dfeconomy/errors"
+	"github.com/skuralll/dfeconomy/economy/service"
 )
 
 // /economy pay <target> <amount>
@@ -40,18 +40,15 @@ func (e EconomyPayCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 		err = e.svc.TransferBalance(ctx, p.UUID(), tuid, e.Amount)
 		if err != nil {
 			switch {
-			case errors.Is(err, dfErrors.ErrValueMustBeAtLeastOne):
-				p.Message("§c[Error] Amount must be at least 1")
-			case errors.Is(err, dfErrors.ErrInsufficientFunds):
-				p.Message("§c[Error] Insufficient funds")
-			case errors.Is(err, dfErrors.ErrUnknownPlayer):
+			case errors.Is(err, service.ErrValidation):
+				p.Message("§c[Error] Invalid input: " + err.Error())
+			case errors.Is(err, service.ErrUnknownPlayer):
 				p.Message("§c[Error] Target player not found: " + e.Username)
 			case errors.Is(err, context.DeadlineExceeded):
 				p.Message("§c[Error] Request timeout")
-			case errors.Is(err, dfErrors.ErrCannotTargetSelf):
-				p.Message("§c[Error] Cannot pay yourself")
-			case errors.Is(err, dfErrors.ErrNegativeAmount):
-				p.Message("§c[Error] Amount must be positive")
+			case errors.Is(err, service.ErrInternalError):
+				p.Message("§c[Error] Failed to pay by internal error")
+				slog.Error("Failed to pay", "error", err, "from", p.Name(), "to", e.Username, "amount", e.Amount)
 			default:
 				p.Message("§c[Error] Failed to pay by internal error")
 				slog.Error("Failed to pay", "error", err, "from", p.Name(), "to", e.Username, "amount", e.Amount)
