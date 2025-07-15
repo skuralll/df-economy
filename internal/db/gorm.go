@@ -81,7 +81,7 @@ func (d *DBGorm) Balance(ctx context.Context, id uuid.UUID) (float64, error) {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return 0, NewNotFoundError("player")
 		}
-		return 0, err
+		return 0, NewDatabaseError("balance query", err.Error())
 	}
 	return account.Balance, nil
 }
@@ -95,12 +95,15 @@ func (d *DBGorm) GetUUIDByName(ctx context.Context, name string) (uuid.UUID, err
 	var uStr string
 	err := d.db.WithContext(ctx).Model(&Account{}).Select("uuid").Where("name = ?", name).Scan(&uStr).Error
 	if err != nil {
-		return uuid.Nil, err
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return uuid.Nil, NewNotFoundError("player")
+		}
+		return uuid.Nil, NewDatabaseError("uuid query", err.Error())
 	}
 	// convert string to uuid
 	uId, err := uuid.Parse(uStr)
 	if err != nil {
-		return uuid.Nil, err
+		return uuid.Nil, NewDatabaseError("uuid parse", err.Error())
 	}
 	return uId, nil
 }
@@ -127,7 +130,7 @@ func (d *DBGorm) Set(ctx context.Context, id uuid.UUID, name string, balance flo
 	})
 
 	if result.Error != nil {
-		return result.Error
+		return NewDatabaseError("balance update", result.Error.Error())
 	}
 
 	return nil
@@ -148,7 +151,7 @@ func (d *DBGorm) Top(ctx context.Context, page int, size int) ([]economy.Economy
 	var accounts []Account
 	err := d.db.WithContext(ctx).Model(&Account{}).Limit(size).Offset(offset).Order("balance DESC").Find(&accounts).Error
 	if err != nil {
-		return nil, err
+		return nil, NewDatabaseError("top query", err.Error())
 	}
 
 	// Convert accounts to EconomyEntry
@@ -187,7 +190,10 @@ func (d *DBGorm) Transfer(ctx context.Context, fromID uuid.UUID, toID uuid.UUID,
 		var fromAccount Account
 		err := tx.Where("uuid = ?", fromID).First(&fromAccount).Error
 		if err != nil {
-			return NewNotFoundError("sender")
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return NewNotFoundError("sender")
+			}
+			return NewDatabaseError("sender query", err.Error())
 		}
 		if fromAccount.Balance < amount {
 			return NewInsufficientBalanceError(amount, fromAccount.Balance)
@@ -195,17 +201,20 @@ func (d *DBGorm) Transfer(ctx context.Context, fromID uuid.UUID, toID uuid.UUID,
 		// Check receiver exists
 		err = tx.Model(&Account{}).Where("uuid = ?", toID).First(&Account{}).Error
 		if err != nil {
-			return NewNotFoundError("receiver")
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return NewNotFoundError("receiver")
+			}
+			return NewDatabaseError("receiver query", err.Error())
 		}
 		// Deduct from sender
 		result := tx.Model(&Account{}).Where("uuid = ?", fromID).Update("balance", gorm.Expr("balance - ?", amount))
 		if result.Error != nil {
-			return result.Error
+			return NewDatabaseError("sender balance update", result.Error.Error())
 		}
 		// Add to receiver
 		result = tx.Model(&Account{}).Where("uuid = ?", toID).Update("balance", gorm.Expr("balance + ?", amount))
 		if result.Error != nil {
-			return result.Error
+			return NewDatabaseError("receiver balance update", result.Error.Error())
 		}
 		// Return nil to indicate success
 		return nil
