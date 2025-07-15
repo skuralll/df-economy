@@ -33,7 +33,7 @@ func (svc *EconomyService) RegisterUser(ctx context.Context, id uuid.UUID, name 
 	_, err := svc.db.Balance(ctx, id)
 	if err == nil {
 		// User already exists
-		return false, nil
+		return false, NewPlayerExistsError(id.String())
 	}
 	// Register new user
 	err = svc.db.Set(ctx, id, name, svc.cfg.DefaultBalance)
@@ -56,7 +56,7 @@ func (svc *EconomyService) GetBalance(ctx context.Context, id uuid.UUID) (float6
 // Set balance
 func (svc *EconomyService) SetBalance(ctx context.Context, id uuid.UUID, name string, amount float64) error {
 	if amount < 0 {
-		return errors.ErrNegativeAmount
+		return NewValidationError("amount", "must be positive")
 	}
 	result := svc.db.Set(ctx, id, name, amount)
 	return result
@@ -65,7 +65,7 @@ func (svc *EconomyService) SetBalance(ctx context.Context, id uuid.UUID, name st
 // Transfer balance
 func (svc *EconomyService) TransferBalance(ctx context.Context, fromID, toID uuid.UUID, amount float64) error {
 	if fromID == toID {
-		return errors.ErrCannotTargetSelf
+		return NewValidationError("target", "cannot target yourself")
 	}
 	err := svc.db.Transfer(ctx, fromID, toID, amount)
 	return err
@@ -75,10 +75,10 @@ func (svc *EconomyService) TransferBalance(ctx context.Context, fromID, toID uui
 func (svc *EconomyService) GetTopBalances(ctx context.Context, page, size int) ([]economy.EconomyEntry, error) {
 	// validation
 	if size <= 0 {
-		return nil, errors.ErrValueMustBeAtLeastOne
+		return nil, NewValidationError("size", "must be at least 1")
 	}
 	if page <= 0 {
-		return nil, errors.ErrPageNotFound
+		return nil, NewValidationError("page", "must be at least 1")
 	}
 	// get result
 	list, err := svc.db.Top(ctx, page, size)
@@ -87,7 +87,7 @@ func (svc *EconomyService) GetTopBalances(ctx context.Context, page, size int) (
 		return nil, err
 	}
 	if len(list) == 0 {
-		return nil, errors.ErrPageNotFound
+		return nil, NewValidationError("page", "not found")
 	}
 	return list, nil
 }
