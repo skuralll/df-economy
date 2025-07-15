@@ -2,12 +2,12 @@ package service
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 
 	"github.com/google/uuid"
 	"github.com/skuralll/dfeconomy/economy"
 	"github.com/skuralll/dfeconomy/economy/config"
-	"github.com/skuralll/dfeconomy/errors"
 	"github.com/skuralll/dfeconomy/internal/db"
 )
 
@@ -25,8 +25,6 @@ func NewEconomyService(cfg config.Config) (*EconomyService, func(), error) {
 	return &EconomyService{dbInstance, cfg}, cleanup, nil
 }
 
-// TODO: Move validation logic in db to the service. The db should only operate the database based on the received values.
-
 // Register a new user
 func (svc *EconomyService) RegisterUser(ctx context.Context, id uuid.UUID, name string) (bool, error) {
 	// Check if user already exists
@@ -38,7 +36,10 @@ func (svc *EconomyService) RegisterUser(ctx context.Context, id uuid.UUID, name 
 	// Register new user
 	err = svc.db.Set(ctx, id, name, svc.cfg.DefaultBalance)
 	if err != nil {
-		return false, err
+		if errors.Is(err, db.ErrValidation) {
+			return false, NewValidationError("user data", err.Error())
+		}
+		return false, NewInternalError("user registration", err.Error())
 	}
 	slog.Info("New user registered", "id", id, "name", name)
 	return true, nil
@@ -48,7 +49,10 @@ func (svc *EconomyService) RegisterUser(ctx context.Context, id uuid.UUID, name 
 func (svc *EconomyService) GetBalance(ctx context.Context, id uuid.UUID) (float64, error) {
 	amount, err := svc.db.Balance(ctx, id)
 	if err != nil {
-		return 0, err
+		if errors.Is(err, db.ErrNotFound) {
+			return 0, NewUnknownPlayerError(id.String())
+		}
+		return 0, NewInternalError("balance query", err.Error())
 	}
 	return amount, nil
 }
@@ -58,8 +62,14 @@ func (svc *EconomyService) SetBalance(ctx context.Context, id uuid.UUID, name st
 	if amount < 0 {
 		return NewValidationError("amount", "must be positive")
 	}
-	result := svc.db.Set(ctx, id, name, amount)
-	return result
+	err := svc.db.Set(ctx, id, name, amount)
+	if err != nil {
+		if errors.Is(err, db.ErrValidation) {
+			return NewValidationError("balance data", err.Error())
+		}
+		return NewInternalError("balance update", err.Error())
+	}
+	return nil
 }
 
 // Transfer balance
@@ -68,7 +78,19 @@ func (svc *EconomyService) TransferBalance(ctx context.Context, fromID, toID uui
 		return NewValidationError("target", "cannot target yourself")
 	}
 	err := svc.db.Transfer(ctx, fromID, toID, amount)
-	return err
+	if err != nil {
+		if errors.Is(err, db.ErrNotFound) {
+			return NewUnknownPlayerError("player in transfer")
+		}
+		if errors.Is(err, db.ErrInsufficientBalance) {
+			return NewValidationError("balance", "insufficient funds")
+		}
+		if errors.Is(err, db.ErrValidation) {
+			return NewValidationError("transfer data", err.Error())
+		}
+		return NewInternalError("transfer", err.Error())
+	}
+	return nil
 }
 
 // Get balance ranking
@@ -84,7 +106,10 @@ func (svc *EconomyService) GetTopBalances(ctx context.Context, page, size int) (
 	list, err := svc.db.Top(ctx, page, size)
 	// error handle
 	if err != nil {
-		return nil, err
+		if errors.Is(err, db.ErrValidation) {
+			return nil, NewValidationError("pagination", err.Error())
+		}
+		return nil, NewInternalError("top query", err.Error())
 	}
 	if len(list) == 0 {
 		return nil, NewValidationError("page", "not found")
@@ -96,7 +121,10 @@ func (svc *EconomyService) GetTopBalances(ctx context.Context, page, size int) (
 func (svc *EconomyService) GetUUIDByName(ctx context.Context, name string) (uuid.UUID, error) {
 	uid, err := svc.db.GetUUIDByName(ctx, name)
 	if err != nil {
-		return uuid.Nil, errors.ErrUnknownPlayer
+		if errors.Is(err, db.ErrNotFound) {
+			return uuid.Nil, NewUnknownPlayerError(name)
+		}
+		return uuid.Nil, NewInternalError("player lookup", err.Error())
 	}
 
 	return uid, nil
