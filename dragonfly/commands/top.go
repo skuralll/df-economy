@@ -8,7 +8,7 @@ import (
 	"github.com/df-mc/dragonfly/server/cmd"
 	"github.com/df-mc/dragonfly/server/world"
 
-	dfErrors "github.com/skuralll/dfeconomy/errors"
+	"github.com/skuralll/dfeconomy/economy/service"
 )
 
 // /economy top <page>
@@ -35,12 +35,12 @@ func (e EconomyTopCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 		entries, err := e.svc.GetTopBalances(ctx, e.Page, itemCount)
 		if err != nil {
 			switch {
-			case errors.Is(err, dfErrors.ErrValueMustBeAtLeastOne):
-				p.Message("§c[Error] Size must be at least 1")
-			case errors.Is(err, dfErrors.ErrPageNotFound):
-				p.Message("§c[Error] Page not found")
+			case errors.Is(err, service.ErrValidation):
+				p.Message("§c[Error] Invalid input: " + err.Error())
 			case errors.Is(err, context.DeadlineExceeded):
 				p.Message("§c[Error] Request timeout")
+			case errors.Is(err, service.ErrInternalError):
+				p.Message("§c[Error] Failed to get top balances by internal error")
 			default:
 				p.Message("§c[Error] Failed to get top balances by internal error")
 			}
