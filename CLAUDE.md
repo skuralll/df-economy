@@ -24,13 +24,13 @@ df-economy/
 │   ├── register.go        # Command registration
 │   ├── economy.go         # Main help command
 │   ├── balance.go         # Balance display (supports optional target)
-│   ├── set.go             # Balance setting (admin command)
+│   ├── set.go             # Balance setting (configurable command)
 │   ├── top.go             # Rankings with pagination
 │   └── pay.go             # Money transfer between players
 ├── economy/               # Domain and business logic
 │   ├── domain.go          # EconomyEntry domain model
 │   ├── config/            # Configuration management
-│   │   └── config.go      # Economy configuration struct with multi-RDBMS support
+│   │   └── config.go      # Economy configuration struct with multi-RDBMS and command control
 │   └── service/           # Business logic layer
 │       ├── service.go     # EconomyService with validation
 │       └── errors.go      # Service-specific error types
@@ -51,7 +51,7 @@ df-economy/
 - **Database Layer**: Interface-based design with GORM ORM implementation supporting multiple RDBMSs
 - **Command Layer**: Dragonfly commands with async execution
 - **Error Handling**: Custom error types with user-friendly messages, layered by responsibility
-- **Configuration**: Configurable database type, DSN, and default balance settings
+- **Configuration**: Configurable database type, DSN, default balance, and command availability settings
 - **Factory Pattern**: Database factory for multi-RDBMS support (SQLite, MySQL, PostgreSQL)
 - **Async Processing**: Non-blocking command execution with timeout handling
 
@@ -82,12 +82,16 @@ df-economy/
 - **DBType**: Database type selection ("sqlite", "mysql", "postgres")
 - **DBDSN**: Database connection string or path
 - **DefaultBalance**: Initial balance for new users
+- **EnableSetCmd**: Enable/disable the `/economy set` command (default: false)
 - **String-Based Configuration**: Practical string-based settings for external library integration
 - **Multi-RDBMS Support**: Configurable database backend selection
+- **Command Control**: Selective command availability for enhanced security
 
 ## Security & Validation
 - **Input Validation**: Amount validation (positive, minimum values)
 - **Self-Transfer Prevention**: Cannot pay yourself
+- **Command Access Control**: Set command disabled by default for security
+- **Configurable Permissions**: Server admins control command availability
 - **Timeout Handling**: All operations have 5-second timeout
 - **Error Logging**: Internal errors logged with context
 - **Transaction Safety**: GORM transactions ensure data consistency
@@ -109,13 +113,15 @@ When detailed Dragonfly information is needed, use the DeepwikiMCP server:
 - Demo server in `cmd/demo/main.go` shows complete integration example
 - GORM provides ORM capabilities with automatic schema migration
 - Domain-driven design with separate domain models and database models
-- Configuration-driven approach with `config.Config` for multi-RDBMS customization
+- Configuration-driven approach with `config.Config` for multi-RDBMS customization and command control
 - Clean architecture with clear separation of concerns
 - Factory pattern implementation for database initialization
 - Pure Go implementations for all database drivers (CGO-free)
 - String-based configuration for practical external library integration
 
 ## Recent Changes
+- **Command Access Control**: Added EnableSetCmd configuration for security control
+- **Conditional Command Registration**: Set command only registered when explicitly enabled
 - **Multi-RDBMS Support**: Implemented support for SQLite, MySQL, and PostgreSQL databases
 - **Factory Pattern**: Added database factory for configurable RDBMS selection
 - **Configuration Enhancement**: Extended config with DBType field for database selection
