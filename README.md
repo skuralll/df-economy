@@ -4,7 +4,7 @@ Economy system library for Minecraft Bedrock Edition (**df-mc/dragonfly** framew
 
 ## Overview
 
-DF Economy provides a currency system for Minecraft servers with player-to-player transactions, balance checking, and leaderboard features.
+DF Economy provides a flexible currency system for Minecraft servers with multi-database support, player-to-player transactions, balance checking, and leaderboard features. The system supports SQLite, MySQL, and PostgreSQL databases.
 
 ## In-Game Commands
 
@@ -30,14 +30,22 @@ go get github.com/skuralll/dfeconomy
 package main
 
 import (
+    "context"
     "github.com/df-mc/dragonfly/server"
     "github.com/skuralll/dfeconomy/dragonfly/commands"
+    "github.com/skuralll/dfeconomy/economy/config"
     "github.com/skuralll/dfeconomy/economy/service"
 )
 
 func main() {
-    // Create economy service
-    svc, cleanup, err := service.NewEconomyService()
+    // Create economy service with configuration
+    cfg := config.Config{
+        DBType:         "sqlite",          // or "mysql", "postgres"
+        DBDSN:          "./economy.db",    // database connection string
+        DefaultBalance: 100.0,             // starting balance for new players
+    }
+    
+    svc, cleanup, err := service.NewEconomyService(cfg)
     if err != nil {
         panic(err)
     }
@@ -59,21 +67,53 @@ func main() {
 
 ### 3. Configuration
 
-Database file (`foo.db`) will be created automatically. Player balance data is stored here.
+The economy system supports multiple database backends:
+
+#### SQLite (Default)
+```go
+cfg := config.Config{
+    DBType: "sqlite",
+    DBDSN:  "./economy.db",
+    DefaultBalance: 100.0,
+}
+```
+
+#### MySQL
+```go
+cfg := config.Config{
+    DBType: "mysql",
+    DBDSN:  "user:password@tcp(localhost:3306)/economy?charset=utf8mb4&parseTime=True&loc=Local",
+    DefaultBalance: 100.0,
+}
+```
+
+#### PostgreSQL
+```go
+cfg := config.Config{
+    DBType: "postgres",
+    DBDSN:  "host=localhost user=user password=password dbname=economy port=5432 sslmode=disable",
+    DefaultBalance: 100.0,
+}
+```
+
+Database tables and schemas are automatically created on startup.
 
 ## Features
 
+- **Multi-Database Support**: SQLite, MySQL, and PostgreSQL support
 - **Balance Management**: Check and set player balances
 - **Transfer System**: Safe money transfers between players
 - **Leaderboard**: Player rankings by balance
-- **Auto Registration**: Automatic new player registration
-- **Error Handling**: User-friendly error messages
+- **Auto Registration**: Automatic new player registration with configurable starting balance
+- **Error Handling**: User-friendly error messages with proper validation
+- **CGO-Free**: Pure Go implementation for all database drivers
+- **Transaction Safety**: ACID compliance with proper rollback handling
 
 ## Requirements
 
-- Go 1.21+
+- Go 1.24+
 - df-mc/dragonfly framework
-- SQLite (auto-setup)
+- Database: SQLite (auto-setup), MySQL, or PostgreSQL
 
 ## 日本語ドキュメント
 

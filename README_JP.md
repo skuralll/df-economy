@@ -4,7 +4,7 @@ Minecraft Bedrock Edition用の経済システムライブラリ（**df-mc/drago
 
 ## 概要
 
-DF Economyは、Minecraftサーバー内で使用できる通貨システムを提供します。プレイヤー間での送金、残高確認、ランキング表示などの機能を備えています。
+DF Economyは、Minecraftサーバー内で使用できる柔軟な通貨システムを提供します。マルチデータベース対応で、プレイヤー間での送金、残高確認、ランキング表示などの機能を備えています。SQLite、MySQL、PostgreSQLに対応しています。
 
 ## ゲーム内コマンド
 
@@ -30,14 +30,22 @@ go get github.com/skuralll/dfeconomy
 package main
 
 import (
+    "context"
     "github.com/df-mc/dragonfly/server"
     "github.com/skuralll/dfeconomy/dragonfly/commands"
+    "github.com/skuralll/dfeconomy/economy/config"
     "github.com/skuralll/dfeconomy/economy/service"
 )
 
 func main() {
-    // 経済システムサービスを作成
-    svc, cleanup, err := service.NewEconomyService()
+    // 設定付きで経済システムサービスを作成
+    cfg := config.Config{
+        DBType:         "sqlite",          // または "mysql", "postgres"
+        DBDSN:          "./economy.db",    // データベース接続文字列
+        DefaultBalance: 100.0,             // 新規プレイヤーの初期残高
+    }
+    
+    svc, cleanup, err := service.NewEconomyService(cfg)
     if err != nil {
         panic(err)
     }
@@ -59,21 +67,53 @@ func main() {
 
 ### 3. 設定
 
-データベースファイル（`foo.db`）が自動的に作成されます。プレイヤーの残高情報はここに保存されます。
+経済システムは複数のデータベースバックエンドをサポートしています：
+
+#### SQLite（デフォルト）
+```go
+cfg := config.Config{
+    DBType: "sqlite",
+    DBDSN:  "./economy.db",
+    DefaultBalance: 100.0,
+}
+```
+
+#### MySQL
+```go
+cfg := config.Config{
+    DBType: "mysql",
+    DBDSN:  "user:password@tcp(localhost:3306)/economy?charset=utf8mb4&parseTime=True&loc=Local",
+    DefaultBalance: 100.0,
+}
+```
+
+#### PostgreSQL
+```go
+cfg := config.Config{
+    DBType: "postgres",
+    DBDSN:  "host=localhost user=user password=password dbname=economy port=5432 sslmode=disable",
+    DefaultBalance: 100.0,
+}
+```
+
+データベースのテーブルとスキーマは起動時に自動作成されます。
 
 ## 機能
 
+- **マルチデータベース対応**: SQLite、MySQL、PostgreSQLをサポート
 - **残高管理**: プレイヤーの残高確認と設定
 - **送金システム**: プレイヤー間での安全な送金
 - **ランキング**: 残高によるプレイヤーランキング
-- **自動登録**: 新規プレイヤーの自動登録
-- **エラーハンドリング**: わかりやすいエラーメッセージ
+- **自動登録**: 設定可能な初期残高での新規プレイヤー自動登録
+- **エラーハンドリング**: 適切な検証付きでわかりやすいエラーメッセージ
+- **CGO不要**: 全データベースドライバーのPure Go実装
+- **トランザクション安全性**: 適切なロールバック処理付きのACID準拠
 
 ## 要件
 
-- Go 1.21以上
+- Go 1.24以上
 - df-mc/dragonfly フレームワーク
-- SQLite（自動セットアップ）
+- データベース: SQLite（自動セットアップ）、MySQL、またはPostgreSQL
 
 ## ライセンス
 
