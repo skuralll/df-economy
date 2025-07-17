@@ -25,13 +25,20 @@ func main() {
 	srv := conf.New()
 	srv.CloseOnProgramEnd()
 
-	svc, cleanup, err := service.NewEconomyService(config.Config{DBType: "sqlite", DBDSN: "./economy.db", DefaultBalance: 100.0})
+	cfg := config.Config{
+		DBType:         "sqlite",
+		DBDSN:          "./economy.db",
+		DefaultBalance: 100.0,
+		EnableSetCmd:   false, // Disable set command by default for security
+	}
+	
+	svc, cleanup, err := service.NewEconomyService(cfg)
 	if err != nil {
 		slog.Error("Failed to create economy service", "error", err)
 		os.Exit(1)
 	}
 	defer cleanup()
-	commands.RegisterCommands(svc)
+	commands.RegisterCommands(svc, cfg)
 
 	srv.Listen()
 	for p := range srv.Accept() {
