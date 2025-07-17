@@ -30,15 +30,16 @@ df-economy/
 ├── economy/               # Domain and business logic
 │   ├── domain.go          # EconomyEntry domain model
 │   ├── config/            # Configuration management
-│   │   └── config.go      # Economy configuration struct
+│   │   └── config.go      # Economy configuration struct with multi-RDBMS support
 │   └── service/           # Business logic layer
-│       └── service.go     # EconomyService with validation
+│       ├── service.go     # EconomyService with validation
+│       └── errors.go      # Service-specific error types
 ├── internal/db/           # Database abstraction
 │   ├── db.go              # DB interface
-│   ├── gorm.go            # GORM implementation with SQLite
-│   └── model.go           # Account database model
-├── errors/                # Custom error types
-│   └── errors.go          # Economy-specific errors
+│   ├── factory.go         # Database factory for multi-RDBMS support
+│   ├── gorm.go            # GORM implementation with multi-RDBMS support
+│   ├── model.go           # Account database model
+│   └── errors.go          # Database-specific error types
 ├── cmd/demo/              # Demo server implementation
 │   └── main.go            # Server setup with economy integration
 └── config.toml            # Dragonfly server configuration
@@ -47,10 +48,11 @@ df-economy/
 ## Architecture Design
 - **Domain Layer**: Clean `EconomyEntry` struct representing core business objects
 - **Service Layer**: `EconomyService` handles business logic, validation, and configuration
-- **Database Layer**: Interface-based design with GORM ORM implementation
+- **Database Layer**: Interface-based design with GORM ORM implementation supporting multiple RDBMSs
 - **Command Layer**: Dragonfly commands with async execution
-- **Error Handling**: Custom error types with user-friendly messages
-- **Configuration**: Configurable database path and default balance settings
+- **Error Handling**: Custom error types with user-friendly messages, layered by responsibility
+- **Configuration**: Configurable database type, DSN, and default balance settings
+- **Factory Pattern**: Database factory for multi-RDBMS support (SQLite, MySQL, PostgreSQL)
 - **Async Processing**: Non-blocking command execution with timeout handling
 
 ## Command Implementation Patterns
@@ -60,19 +62,28 @@ df-economy/
 - **Immediate Feedback**: Commands provide instant feedback before async processing
 
 ## Database Operations
-- **GORM Integration**: Uses GORM ORM with SQLite backend for enhanced data handling
+- **Multi-RDBMS Support**: SQLite, MySQL, and PostgreSQL support via GORM ORM
+- **Factory Pattern**: Database factory (`NewDB`) creates appropriate dialector based on configuration
 - **Account Model**: Database schema with UUID, Name, Balance fields using GORM tags
 - **Balance Management**: Get, Set, Transfer operations with atomic transactions
 - **User Registration**: Automatic user registration on first join with configurable default balance
 - **Leaderboards**: Paginated top balance queries with efficient ordering
 - **UUID Resolution**: Name-to-UUID mapping for player operations
 - **Schema Migration**: Automatic database schema migration on startup
+- **CGO-Free**: All database drivers are pure Go implementations, no CGO required
 
 ## Domain Model
 - **EconomyEntry**: Core domain struct with UUID, Name, Balance fields
 - **Account**: Database model with GORM tags and automatic timestamps
 - **Balance Field**: Renamed from "Money" to "Balance" for clarity
-- **Configuration**: Configurable database path and default balance via `config.Config`
+- **Configuration**: Multi-RDBMS configuration with database type, DSN, and default balance
+
+## Configuration System
+- **DBType**: Database type selection ("sqlite", "mysql", "postgres")
+- **DBDSN**: Database connection string or path
+- **DefaultBalance**: Initial balance for new users
+- **String-Based Configuration**: Practical string-based settings for external library integration
+- **Multi-RDBMS Support**: Configurable database backend selection
 
 ## Security & Validation
 - **Input Validation**: Amount validation (positive, minimum values)
@@ -98,15 +109,22 @@ When detailed Dragonfly information is needed, use the DeepwikiMCP server:
 - Demo server in `cmd/demo/main.go` shows complete integration example
 - GORM provides ORM capabilities with automatic schema migration
 - Domain-driven design with separate domain models and database models
-- Configuration-driven approach with `config.Config` for customization
+- Configuration-driven approach with `config.Config` for multi-RDBMS customization
 - Clean architecture with clear separation of concerns
+- Factory pattern implementation for database initialization
+- Pure Go implementations for all database drivers (CGO-free)
+- String-based configuration for practical external library integration
 
 ## Recent Changes
+- **Multi-RDBMS Support**: Implemented support for SQLite, MySQL, and PostgreSQL databases
+- **Factory Pattern**: Added database factory for configurable RDBMS selection
+- **Configuration Enhancement**: Extended config with DBType field for database selection
+- **Field Renaming**: Changed DBPath to DBDSN for more accurate naming
+- **String-Based Configuration**: Adopted practical string-based settings for external compatibility
+- **Error Handling Reorganization**: Separated error types by layer responsibility
+- **CGO-Free Implementation**: All database drivers use pure Go implementations
 - **GORM Integration**: Migrated from raw SQL to GORM ORM for better data handling
 - **Domain Model Refactoring**: Introduced clean domain models separate from database models
-- **Field Renaming**: Changed "Money" field to "Balance" for better clarity
-- **Configuration System**: Added configurable database path and default balance
-- **Enhanced Error Handling**: Improved error types and validation in service layer
 
 ## Memories
 - to memorize
