@@ -18,7 +18,7 @@ type EconomyService struct {
 
 // Get new EconomyService instance
 func NewEconomyService(cfg config.Config) (*EconomyService, func(), error) {
-	dbInstance, cleanup, err := db.NewDBGorm() // TODO: Support multiple databases
+	dbInstance, cleanup, err := db.NewDBGorm(cfg.DBType, cfg.DBDSN)
 	if err != nil {
 		return nil, nil, err
 	}

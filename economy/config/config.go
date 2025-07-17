@@ -1,6 +1,7 @@
 package config
 
 type Config struct {
-	DBPath         string  `toml:"db_path"`         // Path to the database file
+	DBType         string  `toml:"db_type"`         // Database type: sqlite, mysql, postgres
+	DBDSN          string  `toml:"db_dsn"`          // Path to the database file
 	DefaultBalance float64 `toml:"default_balance"` // Default amount of money for new users
 }
