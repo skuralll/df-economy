@@ -13,7 +13,7 @@ DF Economyは、Minecraftサーバー内で使用できる柔軟な通貨シス�
 | `/economy` | コマンドヘルプを表示 | `/economy` |
 | `/economy balance [プレイヤー名]` | 残高を表示 | `/economy balance` または `/economy balance Steve` |
 | `/economy pay <プレイヤー名> <金額>` | 他のプレイヤーに送金 | `/economy pay Steve 100` |
-| `/economy set <プレイヤー名> <金額>` | 残高を設定（管理者用） | `/economy set Steve 1000` |
+| `/economy set <プレイヤー名> <金額>` | 残高を設定（設定可能） | `/economy set Steve 1000` |
 | `/economy top <ページ>` | 残高ランキングを表示 | `/economy top 1` |
 
 ## 使用方法
@@ -43,6 +43,7 @@ func main() {
         DBType:         "sqlite",          // または "mysql", "postgres"
         DBDSN:          "./economy.db",    // データベース接続文字列
         DefaultBalance: 100.0,             // 新規プレイヤーの初期残高
+        EnableSetCmd:   false,             // /economy setコマンドを有効化 (デフォルト: false)
     }
     
     svc, cleanup, err := service.NewEconomyService(cfg)
@@ -52,7 +53,7 @@ func main() {
     defer cleanup()
     
     // コマンドを登録
-    commands.RegisterCommands(svc)
+    commands.RegisterCommands(svc, cfg)
     
     // サーバーの設定とスタート
     srv := server.DefaultConfig().New()
@@ -75,6 +76,7 @@ cfg := config.Config{
     DBType: "sqlite",
     DBDSN:  "./economy.db",
     DefaultBalance: 100.0,
+    EnableSetCmd: false,
 }
 ```
 
@@ -84,6 +86,7 @@ cfg := config.Config{
     DBType: "mysql",
     DBDSN:  "user:password@tcp(localhost:3306)/economy?charset=utf8mb4&parseTime=True&loc=Local",
     DefaultBalance: 100.0,
+    EnableSetCmd: false,
 }
 ```
 
@@ -93,10 +96,24 @@ cfg := config.Config{
     DBType: "postgres",
     DBDSN:  "host=localhost user=user password=password dbname=economy port=5432 sslmode=disable",
     DefaultBalance: 100.0,
+    EnableSetCmd: false,
 }
 ```
 
 データベースのテーブルとスキーマは起動時に自動作成されます。
+
+#### setコマンドの有効化（オプション）
+残高管理用の`/economy set`コマンドを有効化する場合：
+```go
+cfg := config.Config{
+    DBType: "sqlite",
+    DBDSN:  "./economy.db",
+    DefaultBalance: 100.0,
+    EnableSetCmd: true,  // setコマンドを有効化
+}
+```
+
+**注意**: setコマンドはセキュリティ上の理由からデフォルトで無効化されています。
 
 ## 機能
 
@@ -108,6 +125,7 @@ cfg := config.Config{
 - **エラーハンドリング**: 適切な検証付きでわかりやすいエラーメッセージ
 - **CGO不要**: 全データベースドライバーのPure Go実装
 - **トランザクション安全性**: 適切なロールバック処理付きのACID準拠
+- **コマンド制御**: セキュリティ強化のための設定可能なコマンド有効性
 
 ## 要件
 
