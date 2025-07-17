@@ -13,7 +13,7 @@ DF Economy provides a flexible currency system for Minecraft servers with multi-
 | `/economy` | Show command help | `/economy` |
 | `/economy balance [player]` | Display balance | `/economy balance` or `/economy balance Steve` |
 | `/economy pay <player> <amount>` | Send money to another player | `/economy pay Steve 100` |
-| `/economy set <player> <amount>` | Set player balance (admin) | `/economy set Steve 1000` |
+| `/economy set <player> <amount>` | Set player balance (configurable) | `/economy set Steve 1000` |
 | `/economy top <page>` | Show balance leaderboard | `/economy top 1` |
 
 ## Usage
@@ -43,6 +43,7 @@ func main() {
         DBType:         "sqlite",          // or "mysql", "postgres"
         DBDSN:          "./economy.db",    // database connection string
         DefaultBalance: 100.0,             // starting balance for new players
+        EnableSetCmd:   false,             // enable /economy set command (default: false)
     }
     
     svc, cleanup, err := service.NewEconomyService(cfg)
@@ -52,7 +53,7 @@ func main() {
     defer cleanup()
     
     // Register commands
-    commands.RegisterCommands(svc)
+    commands.RegisterCommands(svc, cfg)
     
     // Server setup and start
     srv := server.DefaultConfig().New()
@@ -75,6 +76,7 @@ cfg := config.Config{
     DBType: "sqlite",
     DBDSN:  "./economy.db",
     DefaultBalance: 100.0,
+    EnableSetCmd: false,
 }
 ```
 
@@ -84,6 +86,7 @@ cfg := config.Config{
     DBType: "mysql",
     DBDSN:  "user:password@tcp(localhost:3306)/economy?charset=utf8mb4&parseTime=True&loc=Local",
     DefaultBalance: 100.0,
+    EnableSetCmd: false,
 }
 ```
 
@@ -93,10 +96,24 @@ cfg := config.Config{
     DBType: "postgres",
     DBDSN:  "host=localhost user=user password=password dbname=economy port=5432 sslmode=disable",
     DefaultBalance: 100.0,
+    EnableSetCmd: false,
 }
 ```
 
 Database tables and schemas are automatically created on startup.
+
+#### Enable Set Command (Optional)
+To enable the `/economy set` command for balance management:
+```go
+cfg := config.Config{
+    DBType: "sqlite",
+    DBDSN:  "./economy.db",
+    DefaultBalance: 100.0,
+    EnableSetCmd: true,  // Enable set command
+}
+```
+
+**Note**: The set command is disabled by default for security reasons.
 
 ## Features
 
@@ -108,6 +125,7 @@ Database tables and schemas are automatically created on startup.
 - **Error Handling**: User-friendly error messages with proper validation
 - **CGO-Free**: Pure Go implementation for all database drivers
 - **Transaction Safety**: ACID compliance with proper rollback handling
+- **Command Control**: Configurable command availability for enhanced security
 
 ## Requirements
 
