@@ -1,7 +1,6 @@
 package db
 
 import (
-	"github.com/skuralll/dfeconomy/db"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
@@ -10,15 +9,15 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-func NewDB(dbType db.DBType, dsn string) (*gorm.DB, error) {
+func NewDB(dbType string, dsn string) (*gorm.DB, error) {
 	var dialector gorm.Dialector
 
 	switch dbType {
-	case db.SQLite:
+	case "sqlite":
 		dialector = sqlite.Dialector{DriverName: "sqlite", DSN: dsn}
-	case db.MySQL:
+	case "mysql":
 		dialector = mysql.Open(dsn)
-	case db.Postgres:
+	case "postgres":
 		dialector = postgres.Open(dsn)
 	default:
 		return nil, NewDatabaseError("create dialector", "unsupported database type: "+string(dbType))
