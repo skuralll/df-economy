@@ -9,10 +9,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/skuralll/dfeconomy/economy"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"gorm.io/gorm/logger"
 	_ "modernc.org/sqlite"
 )
 
@@ -20,13 +18,8 @@ type DBGorm struct {
 	db *gorm.DB
 }
 
-func NewDBGorm() (*DBGorm, func(), error) {
-	db, err := gorm.Open(sqlite.Dialector{
-		DriverName: "sqlite",
-		DSN:        "test.db",
-	}, &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Silent),
-	})
+func NewDBGorm(dbType, dsn string) (*DBGorm, func(), error) {
+	db, err := NewDB(dbType, dsn)
 	if err != nil {
 		slog.Error("failed to open database", "error", err)
 		return nil, nil, err
