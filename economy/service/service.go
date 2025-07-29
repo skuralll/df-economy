@@ -15,11 +15,11 @@ import (
 type EconomyService struct {
 	db   db.DB
 	cfg  config.Config
-	pMgr *permission.PermissionManager
+	pMgr permission.PermissionManager
 }
 
 // Get new EconomyService instance
-func NewEconomyService(cfg config.Config, pMgr *permission.PermissionManager) (*EconomyService, func(), error) {
+func NewEconomyService(cfg config.Config, pMgr permission.PermissionManager) (*EconomyService, func(), error) {
 	dbInstance, cleanup, err := db.NewDBGorm(cfg.DBType, cfg.DBDSN)
 	if err != nil {
 		return nil, nil, err
