@@ -31,8 +31,8 @@ func main() {
 		DefaultBalance: 100.0,
 		EnableSetCmd:   false, // Disable set command by default for security
 	}
-	
-	svc, cleanup, err := service.NewEconomyService(cfg)
+
+	svc, cleanup, err := service.NewEconomyService(cfg, nil)
 	if err != nil {
 		slog.Error("Failed to create economy service", "error", err)
 		os.Exit(1)
