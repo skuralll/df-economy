@@ -9,6 +9,7 @@ import (
 	"github.com/df-mc/dragonfly/server"
 	"github.com/df-mc/dragonfly/server/player/chat"
 	"github.com/pelletier/go-toml"
+	"github.com/skuralll/df-permission/permission"
 	"github.com/skuralll/dfeconomy/dragonfly/commands"
 	"github.com/skuralll/dfeconomy/economy/config"
 	"github.com/skuralll/dfeconomy/economy/service"
@@ -32,7 +33,9 @@ func main() {
 		EnableSetCmd:   false, // Disable set command by default for security
 	}
 
-	svc, cleanup, err := service.NewEconomyService(cfg, nil)
+	pMgr := permission.NewManager()
+
+	svc, cleanup, err := service.NewEconomyService(cfg, pMgr)
 	if err != nil {
 		slog.Error("Failed to create economy service", "error", err)
 		os.Exit(1)
