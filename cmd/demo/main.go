@@ -34,6 +34,11 @@ func main() {
 	}
 
 	pMgr := permission.NewManager()
+	if err := pMgr.Save(); err != nil {
+		slog.Error("Failed to save permission manager", "error", err)
+		os.Exit(1)
+	}
+	slog.Info("Permission manager initialized")
 
 	svc, cleanup, err := service.NewEconomyService(cfg, pMgr)
 	if err != nil {
