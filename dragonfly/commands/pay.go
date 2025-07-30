@@ -7,7 +7,6 @@ import (
 	"log/slog"
 
 	"github.com/df-mc/dragonfly/server/cmd"
-	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/world"
 
 	"github.com/skuralll/dfeconomy/economy/service"
@@ -23,11 +22,7 @@ type EconomyPayCommand struct {
 }
 
 func (e *EconomyPayCommand) Allow(src cmd.Source) bool {
-	p, ok := src.(*player.Player)
-	if !ok {
-		return false
-	}
-	return e.svc.Permission.HasPermission(p.UUID(), "economy.command.pay")
+	return e.CheckPermission(src, "economy.command.pay")
 }
 
 func (e EconomyPayCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {

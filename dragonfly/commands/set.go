@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/df-mc/dragonfly/server/cmd"
-	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/world"
 )
 
@@ -20,11 +19,7 @@ type EconomySetCommand struct {
 }
 
 func (e *EconomySetCommand) Allow(src cmd.Source) bool {
-	p, ok := src.(*player.Player)
-	if !ok {
-		return false
-	}
-	return e.svc.Permission.HasPermission(p.UUID(), "economy.command.set")
+	return e.CheckPermission(src, "economy.command.set")
 }
 
 func (e EconomySetCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
