@@ -59,4 +59,4 @@ func (e EconomyBalanceCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) 
 
 // Validation
 var _ cmd.Runnable = (*EconomyBalanceCommand)(nil)
-var _ cmd.Allower = (*EconomyCommand)(nil)
+var _ cmd.Allower = (*EconomyBalanceCommand)(nil)
