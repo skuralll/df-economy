@@ -13,9 +13,9 @@ import (
 )
 
 type EconomyService struct {
-	db   db.DB
-	cfg  config.Config
-	pMgr permission.PermissionManager
+	db         db.DB
+	cfg        config.Config
+	Permission permission.PermissionManager
 }
 
 // Get new EconomyService instance
