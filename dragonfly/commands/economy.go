@@ -21,3 +21,4 @@ func (c EconomyCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 
 // Validation
 var _ cmd.Runnable = (*EconomyCommand)(nil)
+var _ cmd.Allower = (*EconomyCommand)(nil)
