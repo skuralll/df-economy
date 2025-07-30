@@ -9,6 +9,7 @@ import (
 	"github.com/df-mc/dragonfly/server"
 	"github.com/df-mc/dragonfly/server/player/chat"
 	"github.com/pelletier/go-toml"
+	"github.com/skuralll/df-permission/permission"
 	"github.com/skuralll/dfeconomy/dragonfly/commands"
 	"github.com/skuralll/dfeconomy/economy/config"
 	"github.com/skuralll/dfeconomy/economy/service"
@@ -31,8 +32,15 @@ func main() {
 		DefaultBalance: 100.0,
 		EnableSetCmd:   false, // Disable set command by default for security
 	}
-	
-	svc, cleanup, err := service.NewEconomyService(cfg)
+
+	pMgr := permission.NewManager()
+	if err := pMgr.Save(); err != nil {
+		slog.Error("Failed to save permission manager", "error", err)
+		os.Exit(1)
+	}
+	slog.Info("Permission manager initialized")
+
+	svc, cleanup, err := service.NewEconomyService(cfg, pMgr)
 	if err != nil {
 		slog.Error("Failed to create economy service", "error", err)
 		os.Exit(1)

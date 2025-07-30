@@ -55,3 +55,12 @@ func (b *BaseCommand) ExecuteAsync(p *player.Player, fn func(ctx context.Context
 		fn(ctx)
 	}()
 }
+
+// CheckPermission checks if the source has the specified permission.
+func (b *BaseCommand) CheckPermission(src cmd.Source, permission string) bool {
+	p, ok := src.(*player.Player)
+	if !ok {
+		return false
+	}
+	return b.svc.Permission.HasPermission(p.UUID(), permission)
+}

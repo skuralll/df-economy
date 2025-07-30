@@ -6,23 +6,25 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
+	"github.com/skuralll/df-permission/permission"
 	"github.com/skuralll/dfeconomy/economy"
 	"github.com/skuralll/dfeconomy/economy/config"
 	"github.com/skuralll/dfeconomy/internal/db"
 )
 
 type EconomyService struct {
-	db  db.DB
-	cfg config.Config
+	db         db.DB
+	cfg        config.Config
+	Permission permission.PermissionManager
 }
 
 // Get new EconomyService instance
-func NewEconomyService(cfg config.Config) (*EconomyService, func(), error) {
+func NewEconomyService(cfg config.Config, pMgr permission.PermissionManager) (*EconomyService, func(), error) {
 	dbInstance, cleanup, err := db.NewDBGorm(cfg.DBType, cfg.DBDSN)
 	if err != nil {
 		return nil, nil, err
 	}
-	return &EconomyService{dbInstance, cfg}, cleanup, nil
+	return &EconomyService{dbInstance, cfg, pMgr}, cleanup, nil
 }
 
 // Register a new user

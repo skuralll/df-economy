@@ -32,6 +32,7 @@ package main
 import (
     "context"
     "github.com/df-mc/dragonfly/server"
+    "github.com/skuralll/df-permission/permission"
     "github.com/skuralll/dfeconomy/dragonfly/commands"
     "github.com/skuralll/dfeconomy/economy/config"
     "github.com/skuralll/dfeconomy/economy/service"
@@ -46,7 +47,11 @@ func main() {
         EnableSetCmd:   false,             // /economy setコマンドを有効化 (デフォルト: false)
     }
     
-    svc, cleanup, err := service.NewEconomyService(cfg)
+    // 権限管理システムを初期化
+    // 権限管理システムが不要な場合は nilを渡すことも可能
+    pMgr := permission.NewManager()
+    
+    svc, cleanup, err := service.NewEconomyService(cfg, pMgr)
     if err != nil {
         panic(err)
     }

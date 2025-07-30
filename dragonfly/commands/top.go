@@ -21,6 +21,10 @@ type EconomyTopCommand struct {
 	Page   int            `cmd:"page" help:"The page to show."`
 }
 
+func (e *EconomyTopCommand) Allow(src cmd.Source) bool {
+	return e.CheckPermission(src, "economy.command.top")
+}
+
 func (e EconomyTopCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 	p, ok := e.ValidatePlayerSource(src, o)
 	if !ok {
@@ -56,3 +60,4 @@ func (e EconomyTopCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 
 // Validation
 var _ cmd.Runnable = (*EconomyTopCommand)(nil)
+var _ cmd.Allower = (*EconomyTopCommand)(nil)

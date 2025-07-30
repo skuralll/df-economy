@@ -11,6 +11,10 @@ type EconomyCommand struct {
 	*BaseCommand
 }
 
+func (c *EconomyCommand) Allow(src cmd.Source) bool {
+	return c.CheckPermission(src, "economy.command.economy")
+}
+
 func (c EconomyCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 	o.Printf("§6=== Economy Commands ===")
 	o.Printf("§a/economy balance [username]§r - Display balance of yourself or another player")
@@ -21,3 +25,4 @@ func (c EconomyCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 
 // Validation
 var _ cmd.Runnable = (*EconomyCommand)(nil)
+var _ cmd.Allower = (*EconomyCommand)(nil)

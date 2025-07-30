@@ -21,6 +21,10 @@ type EconomyPayCommand struct {
 	Amount   float64        `cmd:"amount"`
 }
 
+func (e *EconomyPayCommand) Allow(src cmd.Source) bool {
+	return e.CheckPermission(src, "economy.command.pay")
+}
+
 func (e EconomyPayCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 	p, ok := e.ValidatePlayerSource(src, o)
 	if !ok {
@@ -62,3 +66,4 @@ func (e EconomyPayCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 
 // Validation
 var _ cmd.Runnable = (*EconomyPayCommand)(nil)
+var _ cmd.Allower = (*EconomyPayCommand)(nil)

@@ -18,6 +18,10 @@ type EconomyBalanceCommand struct {
 	Username cmd.Optional[string] `cmd:"username"`
 }
 
+func (e *EconomyBalanceCommand) Allow(src cmd.Source) bool {
+	return e.CheckPermission(src, "economy.command.balance")
+}
+
 func (e EconomyBalanceCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
 	p, ok := e.ValidatePlayerSource(src, o)
 	if !ok {
@@ -59,3 +63,4 @@ func (e EconomyBalanceCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) 
 
 // Validation
 var _ cmd.Runnable = (*EconomyBalanceCommand)(nil)
+var _ cmd.Allower = (*EconomyBalanceCommand)(nil)
