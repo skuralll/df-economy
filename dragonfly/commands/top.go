@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/df-mc/dragonfly/server/cmd"
+	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/world"
 
 	"github.com/skuralll/dfeconomy/economy/service"
@@ -19,6 +20,14 @@ type EconomyTopCommand struct {
 	*BaseCommand
 	SubCmd cmd.SubCommand `cmd:"top" help:"Show the top players by balance."`
 	Page   int            `cmd:"page" help:"The page to show."`
+}
+
+func (e *EconomyTopCommand) Allow(src cmd.Source) bool {
+	p, ok := src.(*player.Player)
+	if !ok {
+		return false
+	}
+	return e.svc.Permission.HasPermission(p.UUID(), "economy.command.top")
 }
 
 func (e EconomyTopCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {

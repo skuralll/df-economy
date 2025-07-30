@@ -2,6 +2,7 @@ package commands
 
 import (
 	"github.com/df-mc/dragonfly/server/cmd"
+	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/world"
 )
 
@@ -9,6 +10,14 @@ import (
 
 type EconomyCommand struct {
 	*BaseCommand
+}
+
+func (c *EconomyCommand) Allow(src cmd.Source) bool {
+	p, ok := src.(*player.Player)
+	if !ok {
+		return false
+	}
+	return c.svc.Permission.HasPermission(p.UUID(), "economy.command.economy")
 }
 
 func (c EconomyCommand) Run(src cmd.Source, o *cmd.Output, tx *world.Tx) {
