@@ -76,6 +76,8 @@ github.com/segmentio/fasthash v1.0.3 h1:EI9+KE1EwvMLBWwjpRDc+fEM+prwxDYbslddQGtr
 github.com/segmentio/fasthash v1.0.3/go.mod h1:waKX8l2N8yckOgmSsXJi7x1ZfdKZ4x7KRMzBtS3oedY=
 github.com/skuralll/df-permission v1.0.0 h1:ehZ/o7/PdkpPgEiBTX0zwFiAFkdw8l5d944r71cWHj4=
 github.com/skuralll/df-permission v1.0.0/go.mod h1:bvSGahTnJckw+l9/QfETG5GzbvnyM5f1pjEwjycoH4c=
+github.com/skuralll/df-permission v1.2.0 h1:nGw2+pHpDMKig7ni3UXY+rjH1VfF/n1EgQp8CiigXWE=
+github.com/skuralll/df-permission v1.2.0/go.mod h1:bvSGahTnJckw+l9/QfETG5GzbvnyM5f1pjEwjycoH4c=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
